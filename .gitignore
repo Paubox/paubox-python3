@@ -1,0 +1,4 @@
+.pytest_cache
+paubox_python.egg-info
+*/__pycache__
+*/**/__pycache__
