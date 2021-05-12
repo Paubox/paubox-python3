@@ -11,6 +11,10 @@ import os
 from paubox import paubox
 from paubox.helpers.mail import Mail
 
+from config import Config 
+with open("tests/config.cfg") as config_file:
+    test_credentials = Config(config_file)
+
 TestCase.maxDiff = None
 
 
@@ -111,8 +115,8 @@ class TestPaubox(unittest.TestCase):
 
     def test_sending(self):
         """Test send email functionality"""
-        paubox_client = paubox.PauboxApiClient('61214b712f8b747147bc38d7d147c9b44588a2b2', 'https://api.paubox.net/v1/letscareshare')
-        recipients = ['nick@nickwong.io']
+        paubox_client = paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"], test_credentials["PAUBOX_HOST"])
+        recipients = ['recipient1@example.com']
         from_ = 'test@letscareshare.com'
         subject = 'Testing!'
         attachment_content = base64.b64encode(b'Hello World!').decode()
@@ -152,7 +156,7 @@ class TestPaubox(unittest.TestCase):
         }
         mail = Mail(from_, subject, recipients, content, optional_headers)
 
-        paubox_client = paubox.PauboxApiClient('61214b712f8b747147bc38d7d147c9b44588a2b2', 'https://api.paubox.net/v1/letscareshare')
+        paubox_client = paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"], test_credentials["PAUBOX_HOST"])
         send_response = paubox_client.send(mail.get())
         source_tracking_id = send_response.to_dict['sourceTrackingId']
 
