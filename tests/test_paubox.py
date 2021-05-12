@@ -31,7 +31,8 @@ class TestPaubox(unittest.TestCase):
             'text/plain': 'Hello World!',
             'text/html': plain_html_content
         }
-        attachment_content = base64.b64encode(b'Hello World!')
+        # encode the attachment in b64 and decode to compare the string representation of the encoding
+        attachment_content = base64.b64encode(b'Hello World!').decode()
         optional_headers = {
             'attachments': [{
                 'fileName': 'the_file.txt',
@@ -61,7 +62,7 @@ class TestPaubox(unittest.TestCase):
                     },
                     'attachments': [
                         {
-                            'content': b'SGVsbG8gV29ybGQh',
+                            'content': 'SGVsbG8gV29ybGQh',
                             'contentType': 'text/plain',
                             'fileName': 'the_file.txt'
                         }
@@ -117,7 +118,7 @@ class TestPaubox(unittest.TestCase):
         """Test send email functionality"""
         paubox_client = paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"], test_credentials["PAUBOX_HOST"])
         recipients = ['recipient1@example.com']
-        from_ = 'test@letscareshare.com'
+        from_ = test_credentials["APPROVED_SENDER"]
         subject = 'Testing!'
         attachment_content = base64.b64encode(b'Hello World!').decode()
         content = {
@@ -130,7 +131,7 @@ class TestPaubox(unittest.TestCase):
                 'contentType': 'text/plain',
                 'content': attachment_content
             }],
-            'reply_to': 'test@letscareshare.com',
+            'reply_to': test_credentials["APPROVED_SENDER"],
             'bcc': ['recipient2@example.com'],
             'cc': ['recipient3@example.com'],
             'forceSecureNotification': 'false'
@@ -138,19 +139,17 @@ class TestPaubox(unittest.TestCase):
 
         mail = Mail(from_, subject, recipients, content, optional_headers)
         paubox_response = paubox_client.send(mail.get())
-        resAsDict = paubox_response.to_dict
         self.assertEqual(paubox_response.status_code, 200)
         self.assertTrue('sourceTrackingId' in paubox_response.text)
 
     def test_retrieve_disposition(self):
         """Test get email disposition functionality"""
         recipients = ['recipient@example.com']
-        from_ = 'test@letscareshare.com'
+        from_ = test_credentials["APPROVED_SENDER"]
         subject = 'Testing!'
         content = {'text/plain': 'Hello World!'}
         optional_headers = {
-
-            'cc': [os.environ.get('RECIPIENT3')],
+            'cc': ['recipient3@example.com'],
             'forceSecureNotification': 'true',
             'allowNonTLS': False
         }
