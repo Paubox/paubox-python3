@@ -44,7 +44,7 @@ class Response(object):
         :return: Body of Paubox API response as a dict
         """
         if self.text:
-            return json.loads(self.text.decode('utf-8'))
+            return json.loads(self.text)
         return None
 
 class PauboxApiClient(object):

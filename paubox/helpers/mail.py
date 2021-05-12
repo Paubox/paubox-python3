@@ -49,46 +49,50 @@ class Mail(object):
             if 'text/html' in content:
                 _html_text = content.get('text/html')
                 if(_html_text != None and _html_text != ""):
-                    encoded_html = base64.b64encode(_html_text.encode('UTF-8'))
+                    # _html_text (str) is encoded to a bytes-like object using _html_text.encode('utf-8')
+                    # and then encode that bytes-like obj with Base64
+                    # and then decode the Base64 into a string representation of the b64 conversion.
+                    # we will send the string representation of the b64 conversion.
+                    encoded_html = base64.b64encode(_html_text.encode('utf-8')).decode('utf-8')
                     content['text/html'] = encoded_html
 
-            self.content = content
+            self._content = content
 
         if optional_headers:
             if 'bcc' in optional_headers:
-                self.bcc = optional_headers['bcc']
+                self._bcc = optional_headers['bcc']
             if 'cc' in optional_headers:
-                self.cc = optional_headers['cc']
+                self._cc = optional_headers['cc']
             if 'reply_to' in optional_headers:
-                self.reply_to = optional_headers['reply_to']
+                self._reply_to = optional_headers['reply_to']
             if 'attachments' in optional_headers:
-                self.attachments = optional_headers['attachments']
+                self._attachments = optional_headers['attachments']
             if 'forceSecureNotification' in optional_headers:
-                self.forceSecureNotification = optional_headers['forceSecureNotification']
+                self._forceSecureNotification = optional_headers['forceSecureNotification']
             if 'allowNonTLS' in optional_headers:
-                self.allowNonTLS = optional_headers['allowNonTLS']
+                self._allowNonTLS = optional_headers['allowNonTLS']
 
     def get(self):
         """Formats the Email to a Send Request for the Paubox Email API"""
         mail = {"data": {"message": {}}}
+        headers = {"subject": self._subject, "from": self._from_}
         mail["data"]["message"]["recipients"] = self._recipients
-        mail["data"]["message"]["headers"] = {
-            "subject": self._subject, "from": self._from_}
+        mail["data"]["message"]["headers"] = headers
         mail["data"]["message"]["content"] = self._content
 
-        if hasattr(self, 'bcc'):
+        if hasattr(self, '_bcc') and self._bcc:
             mail["data"]["message"]["bcc"] = self._bcc
-        if hasattr(self, 'cc'):
+        if hasattr(self, '_cc') and self._cc:
             mail["data"]["message"]["cc"] = self._cc
-        if hasattr(self, 'reply_to'):
+        if hasattr(self, '_reply_to') and self._reply_to:
             mail["data"]["message"]["headers"]["reply-to"] = self._reply_to
-        if hasattr(self, 'attachments'):
+        if hasattr(self, '_attachments') and self._attachments:
             mail["data"]["message"]["attachments"] = self._attachments
-        if hasattr(self, 'forceSecureNotification'):
-            self.forceSecureNotification = self._return_valid_forcesecurenotification_value()
-            if(self.forceSecureNotification != None):
-                mail["data"]["message"]["forceSecureNotification"] = self.forceSecureNotification
-        if hasattr(self, 'allowNonTLS'):
+        if hasattr(self, '_forceSecureNotification'):
+            self._forceSecureNotification = self._return_valid_forcesecurenotification_value()
+            if(self._forceSecureNotification != None):
+                mail["data"]["message"]["forceSecureNotification"] = self._forceSecureNotification
+        if hasattr(self, '_allowNonTLS'):
             mail["data"]["message"]["allowNonTLS"] = self._allowNonTLS
         else:
             mail["data"]["message"]["allowNonTLS"] = False
@@ -97,7 +101,7 @@ class Mail(object):
     def _return_valid_forcesecurenotification_value(self):
         """ Returns valid ForceSecureNotification value """
 
-        _forceSecureNotification = self.forceSecureNotification
+        _forceSecureNotification = self._forceSecureNotification
         if isinstance(_forceSecureNotification, str):
             if(_forceSecureNotification == None or _forceSecureNotification == ""):
                 return None
