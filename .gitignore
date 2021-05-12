@@ -2,3 +2,5 @@
 paubox_python.egg-info
 */__pycache__
 */**/__pycache__
+.DS_Store
+tests/config.cfg
