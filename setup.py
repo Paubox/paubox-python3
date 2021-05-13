@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/Paubox/paubox-python3",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3.8.2",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: Apache Software License"
     ],
 )
