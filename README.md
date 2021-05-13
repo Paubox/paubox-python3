@@ -255,7 +255,7 @@ paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_conf
 recipients = ["recipient@example.com"]
 from_ = "sender@yourdomain.com"
 subject = "Testing!"
-attachment_content = base64.b64encode("Hello World!")
+attachment_content = base64.b64encode(bytes("Hello World!", encoding="utf-8")).decode()
 content = {
     "text/plain": "Hello World!",
     "text/html": "<html><body><h1>Hello World!</h1></body></html>"
@@ -289,7 +289,7 @@ with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
 paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
-attachment_content = base64.b64encode("Hello World!")
+attachment_content = base64.b64encode("Hello World!".encode('utf-8')).decode('utf-8')
 mail = {
     "data": {
         "message": {

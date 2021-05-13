@@ -32,7 +32,7 @@ class TestPaubox(unittest.TestCase):
             'text/html': plain_html_content
         }
         # encode the attachment in b64 and decode to compare the string representation of the encoding
-        attachment_content = base64.b64encode(b'Hello World!').decode()
+        attachment_content = base64.b64encode('Hello World!'.encode('utf-8')).decode('utf-8')
         optional_headers = {
             'attachments': [{
                 'fileName': 'the_file.txt',
@@ -46,7 +46,7 @@ class TestPaubox(unittest.TestCase):
             'allowNonTLS': True
         }
         # compare the string representations of the base64 encoded message contents
-        encodedHtmlContent = base64.b64encode(plain_html_content.encode('utf-8')).decode()
+        encodedHtmlContent = base64.b64encode(plain_html_content.encode('utf-8')).decode('utf-8')
         mail = Mail(from_, subject, recipients, content, optional_headers)
         expected_mail = {
             'data': {
@@ -120,7 +120,7 @@ class TestPaubox(unittest.TestCase):
         recipients = ['recipient1@example.com']
         from_ = test_credentials["APPROVED_SENDER"]
         subject = 'Testing!'
-        attachment_content = base64.b64encode(b'Hello World!').decode()
+        attachment_content = base64.b64encode('Hello World!'.encode('utf-8')).decode('utf-8')
         content = {
             'text/plain': 'Hello World!',
             'text/html': "<html><body><h1>Hello World!</h1></body></html>"
