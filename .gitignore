@@ -1,6 +1,15 @@
 .pytest_cache
-paubox_python.egg-info
 */__pycache__
 */**/__pycache__
 .DS_Store
 tests/config.cfg
+
+# Compiled python modules.
+*.pyc
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+# paubox_python.egg-info
+/*.egg-info
