@@ -3,13 +3,17 @@ This library allows you to send emails through the Paubox Transactional Email
 API application and get the email disposition of sent emails.
 Paubox Test Suite
 """
-
 import unittest
 from unittest import TestCase
 import base64
 import os
-import paubox
+
+from paubox import paubox
 from paubox.helpers.mail import Mail
+
+from config import Config 
+with open("tests/config.cfg") as config_file:
+    test_credentials = Config(config_file)
 
 TestCase.maxDiff = None
 
@@ -25,9 +29,10 @@ class TestPaubox(unittest.TestCase):
         plain_html_content = '<html><body><h1>Hello World!</h1></body></html>'
         content = {
             'text/plain': 'Hello World!',
-            'text/html': plan_html_content
+            'text/html': plain_html_content
         }
-        attachment_content = base64.b64encode('Hello World!')
+        # encode the attachment in b64 and decode to compare the string representation of the encoding
+        attachment_content = base64.b64encode('Hello World!'.encode('utf-8')).decode('utf-8')
         optional_headers = {
             'attachments': [{
                 'fileName': 'the_file.txt',
@@ -40,8 +45,8 @@ class TestPaubox(unittest.TestCase):
             'forceSecureNotification': 'true',
             'allowNonTLS': True
         }
-
-        encodedHtmlContent = base64.b64encode(plain_html_content)
+        # compare the string representations of the base64 encoded message contents
+        encodedHtmlContent = base64.b64encode(plain_html_content.encode('utf-8')).decode('utf-8')
         mail = Mail(from_, subject, recipients, content, optional_headers)
         expected_mail = {
             'data': {
@@ -80,14 +85,13 @@ class TestPaubox(unittest.TestCase):
         recipients = ['recipient@example.com']
         content = {'text/plain': 'Hello World!'}
         optional_headers = {
-
             'cc': ['recipientcc@example.com'],
             'forceSecureNotification': 'false',
             'allowNonTLS': False
         }
         mail = Mail('', '', recipients, content, optional_headers)
-        mail.from_ = 'sender@yourdomain.com'
-        mail.subject = 'Testing!'
+        mail._from_ = 'sender@yourdomain.com'
+        mail._subject = 'Testing!'
         expected_mail = {
             'data': {
                 'message': {
@@ -112,11 +116,11 @@ class TestPaubox(unittest.TestCase):
 
     def test_sending(self):
         """Test send email functionality"""
-        paubox_client = paubox.PauboxApiClient()
-        recipients = [os.environ.get('RECIPIENT')]
-        from_ = os.environ.get('APPROVED_SENDER')
+        paubox_client = paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"], test_credentials["PAUBOX_HOST"])
+        recipients = ['recipient1@example.com']
+        from_ = test_credentials["APPROVED_SENDER"]
         subject = 'Testing!'
-        attachment_content = base64.b64encode(b'Hello World!')
+        attachment_content = base64.b64encode('Hello World!'.encode('utf-8')).decode('utf-8')
         content = {
             'text/plain': 'Hello World!',
             'text/html': "<html><body><h1>Hello World!</h1></body></html>"
@@ -127,9 +131,9 @@ class TestPaubox(unittest.TestCase):
                 'contentType': 'text/plain',
                 'content': attachment_content
             }],
-            'reply_to': os.environ.get('APPROVED_SENDER'),
-            'bcc': os.environ.get('RECIPIENT2'),
-            'cc': [os.environ.get('RECIPIENT3')],
+            'reply_to': test_credentials["APPROVED_SENDER"],
+            'bcc': ['recipient2@example.com'],
+            'cc': ['recipient3@example.com'],
             'forceSecureNotification': 'false'
         }
 
@@ -140,19 +144,18 @@ class TestPaubox(unittest.TestCase):
 
     def test_retrieve_disposition(self):
         """Test get email disposition functionality"""
-        recipients = [os.environ.get('RECIPIENT')]
-        from_ = os.environ.get('APPROVED_SENDER')
+        recipients = ['recipient@example.com']
+        from_ = test_credentials["APPROVED_SENDER"]
         subject = 'Testing!'
         content = {'text/plain': 'Hello World!'}
         optional_headers = {
-
-            'cc': [os.environ.get('RECIPIENT3')],
+            'cc': ['recipient3@example.com'],
             'forceSecureNotification': 'true',
             'allowNonTLS': False
         }
         mail = Mail(from_, subject, recipients, content, optional_headers)
 
-        paubox_client = paubox.PauboxApiClient()
+        paubox_client = paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"], test_credentials["PAUBOX_HOST"])
         send_response = paubox_client.send(mail.get())
         source_tracking_id = send_response.to_dict['sourceTrackingId']
 
