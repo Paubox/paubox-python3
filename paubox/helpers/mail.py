@@ -113,5 +113,7 @@ class Mail(object):
                     return False
                 else:
                     return None
+        elif isinstance(_forceSecureNotification, bool):
+            return _forceSecureNotification
         else:
             return None
