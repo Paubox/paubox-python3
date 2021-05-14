@@ -17,4 +17,5 @@ setuptools.setup(
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: Apache Software License"
     ],
+    install_requires=["requests"]
 )
