@@ -9,6 +9,8 @@ tests/config.cfg
 
 # Setuptools distribution folder.
 /dist/
+# Distribution
+build/
 
 # Python egg metadata, regenerated from source files by setuptools.
 # paubox_python.egg-info
