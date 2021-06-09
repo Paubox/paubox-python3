@@ -4,7 +4,7 @@
 
 This is the official **Python3** package for the Paubox Email API. 
 
-The Paubox Email API allows your application to send secure, HIPAA compliant email via Paubox and track deliveries and opens.
+The Paubox Email API allows your application to send secure, HIPAA compliant email via [Paubox](https://www.paubox.com) and track email deliveries and opens.
 
 # Table of Contents
 *  [Installation](#installation)
@@ -23,18 +23,18 @@ The Paubox Email API allows your application to send secure, HIPAA compliant ema
 ### Getting Paubox API Credentials
 You will need to have a Paubox account. You can [sign up here](https://www.paubox.com/pricing#paubox-email-api).
 
-Once you have an account, follow the instructions on the REST API dashboard to verify domain ownership and generate API credentials. Further **[quickstart instructions for this process can be found here.](https://docs.paubox.com/docs/paubox_email_api/quickstart)**
+Once you have an account, follow the instructions on the REST API dashboard to verify domain ownership and generate API keys. Further **[quickstart instructions for this process can be found here.](https://docs.paubox.com/docs/paubox_email_api/quickstart)**
 
 ### Configuring API Credentials Locally
 
-Include your API credentials in a config file (e.g. `config.cfg`)
+While you can simply hard-code your authentication credentials, it's often better practice to tuck these values away in an environment or configuration file. Our following code snippets leverage the use of the [`config`](https://docs.red-dove.com/cfg/python.html#python-getting-started) python package to load our credentials. To set `config` up, include your API key credentials in a config file (e.g. `config.cfg`)
 
 ```
 PAUBOX_HOST: 'https://api.paubox.net/v1/YOUR_ENDPOINT_NAME'
 PAUBOX_API_KEY: 'YOUR_API_KEY'
 ```
 
-Please install config package using pip3 to load API credentials from the
+Then, install the `config` package using pip3 to load API credentials from the
 `config.cfg` file:
 
 ```
@@ -340,7 +340,7 @@ print(disposition_response.text)
 ```
 <a name="#contributing"></a>
 ## Contributing
-The Paubox-python3 SDK is maintained by Paubox, Inc.
+The Paubox-python3 SDK is maintained by [Paubox, Inc.](https://www.paubox.com)
 
 We want to empower our users building applications with the Paubox Email API, and so we encourage you to file bug reports/create GitHub issues and pull requests. Chances are other developers using our Email API might be having similar ideas about new features or approaches to improving the SDK, so we encourage you to upvote or comment on existing issues or pull requests! 
 
