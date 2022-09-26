@@ -83,7 +83,7 @@ from config import Config
 with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
-paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
+paubox_client = paubox.PauboxApiClient(paubox_config['PAUBOX_API_KEY'], paubox_config['PAUBOX_HOST'])
 mail = {
     "data": {
         "message": {
@@ -121,7 +121,7 @@ from config import Config
 with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
-paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
+paubox_client = paubox.PauboxApiClient(paubox_config['PAUBOX_API_KEY'], paubox_config.['PAUBOX_HOST'])
 recipients = ["recipient@example.com"]
 from_ = "sender@yourdomain.com"
 subject = "Testing!"
@@ -147,7 +147,7 @@ from config import Config
 with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
-paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
+paubox_client = paubox.PauboxApiClient(paubox_config['PAUBOX_API_KEY'], paubox_config['PAUBOX_HOST'])
 mail = {
     "data": {
         "message": {
@@ -189,7 +189,7 @@ from config import Config
 with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
-paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
+paubox_client = paubox.PauboxApiClient(paubox_config['PAUBOX_API_KEY'], paubox_config['PAUBOX_HOST'])
 recipients = ["recipient@example.com"]
 from_ = "sender@yourdomain.com"
 subject = "Testing!"
@@ -214,7 +214,7 @@ from config import Config
 with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
-paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
+paubox_client = paubox.PauboxApiClient(paubox_config['PAUBOX_API_KEY'], paubox_config['PAUBOX_HOST'])
 mail = {
     "data": {
         "message": {
@@ -251,7 +251,7 @@ from config import Config
 with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
-paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
+paubox_client = paubox.PauboxApiClient(paubox_config['PAUBOX_API_KEY'], paubox_config['PAUBOX_HOST'])
 recipients = ["recipient@example.com"]
 from_ = "sender@yourdomain.com"
 subject = "Testing!"
@@ -288,7 +288,7 @@ from config import Config
 with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
-paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
+paubox_client = paubox.PauboxApiClient(paubox_config['PAUBOX_API_KEY'], paubox_config['PAUBOX_HOST'])
 attachment_content = base64.b64encode("Hello World!".encode('utf-8')).decode('utf-8')
 mail = {
     "data": {
@@ -332,7 +332,7 @@ from config import Config
 with open("config.cfg") as config_file:
     paubox_config = Config(config_file)
 
-paubox_client = paubox.PauboxApiClient(paubox_config.PAUBOX_API_KEY, paubox_config.PAUBOX_HOST)
+paubox_client = paubox.PauboxApiClient(paubox_config['PAUBOX_API_KEY'], paubox_config['PAUBOX_HOST'])
 disposition_response = paubox_client.get("SOURCE_TRACKING_ID")
 print(disposition_response.status_code)
 print(disposition_response.headers)
