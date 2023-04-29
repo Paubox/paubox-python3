@@ -15,3 +15,6 @@ build/
 # Python egg metadata, regenerated from source files by setuptools.
 # paubox_python.egg-info
 /*.egg-info
+
+.vs/
+env/
