@@ -64,3 +64,8 @@ target/
 
 # Ipython Notebook
 .ipynb_checkpoints
+
+# Credentials and secrets
+tests/config.cfg
+.env
+.env.*
