@@ -2,6 +2,8 @@
 
 # Paubox Python3 Package
 
+**NEW:** [Version 2 of the Paubox Email API SDK for Python](https://github.com/Paubox/paubox-python3/tree/sdk-generation/v2.0.0-beta) is available to beta test now. It includes code for newer features like bulk message sending, dynamic templates, and more. We will be deprecating the old in the near future.
+
 This is the official **Python3** package for the Paubox Email API. 
 
 The Paubox Email API allows your application to send secure, HIPAA compliant email via [Paubox](https://www.paubox.com) and track email deliveries and opens.
