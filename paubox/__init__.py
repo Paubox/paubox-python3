@@ -4,4 +4,5 @@ API application and get the email disposition of sent emails.
 """
 
 from .paubox import PauboxApiClient, Response
+from .forms import PauboxFormsClient
 NAME = "paubox"
