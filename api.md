@@ -7,7 +7,7 @@ The SDK exposes two independent clients and a shared `Response` class:
 | Class | Module | Auth required | Base URL |
 |---|---|---|---|
 | `PauboxApiClient` | `paubox.paubox` | Yes — `Token token=<key>` | Per-customer (`PAUBOX_HOST`) |
-| `PauboxFormsClient` | `paubox.forms` | No | `https://next.paubox.com` |
+| `PauboxFormsClient` | `paubox.forms` | No | `https://apx.paubox.com/forms` |
 | `Response` | `paubox.paubox` | — | — |
 
 All three are importable directly from the top-level package:
@@ -108,12 +108,12 @@ These are **public endpoints** — no API key is required. They are intended to 
 ### Constructor
 
 ```python
-PauboxFormsClient(base_url="https://next.paubox.com")
+PauboxFormsClient(base_url="https://apx.paubox.com/forms")
 ```
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `base_url` | `str` | `"https://next.paubox.com"` | Forms API base URL. Override for testing. |
+| `base_url` | `str` | `"https://apx.paubox.com/forms"` | Forms API base URL. Override for testing. |
 
 ### `get_form(form_id)`
 

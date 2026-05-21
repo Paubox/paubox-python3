@@ -55,7 +55,7 @@ PYTHONPATH=. python tests/test_paubox.py
 
 - **`Response` class lives in `paubox/paubox.py`** and is imported by `forms.py` to avoid a breaking change. If you move it, update all importers.
 - **`PauboxFormsClient` accepts an optional `base_url`** constructor argument for test injection (no real HTTP calls in unit tests).
-- **Forms endpoints use `https://next.paubox.com`**; Email endpoints use a per-customer host set via `PAUBOX_HOST`.
+- **Forms endpoints use `https://apx.paubox.com/forms`**; Email endpoints use a per-customer host set via `PAUBOX_HOST`.
 - **No auth headers are sent for Forms API calls** — these are public endpoints called by form respondents.
 - **`submit_form` validates `form_data` locally** before making the network call, raising `ValueError` if it is falsy (mirrors the API's 400 response).
 
@@ -66,7 +66,7 @@ PYTHONPATH=. python tests/test_paubox.py
 | `PAUBOX_API_KEY` | `PauboxApiClient` | Paubox Email API key |
 | `PAUBOX_HOST` | `PauboxApiClient` | Email API base URL (e.g. `https://api.paubox.net/v1/your-endpoint`) |
 
-`PauboxFormsClient` has no required environment variables; its base URL defaults to `https://next.paubox.com`.
+`PauboxFormsClient` has no required environment variables; its base URL defaults to `https://apx.paubox.com/forms`.
 
 ## Adding a New API Surface
 
