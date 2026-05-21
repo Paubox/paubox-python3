@@ -11,6 +11,9 @@ The Paubox Email API allows your application to send secure, HIPAA compliant ema
 # Table of Contents
 *  [Installation](#installation)
 *  [Usage](#usage)
+   *  [Sending Email](#sending-messages-with-the-paubox-mail-helper)
+   *  [Checking Email Dispositions](#checking-email-dispositions)
+   *  [Paubox Forms API](#paubox-forms-api)
 *  [Contributing](#contributing)
 *  [License](#license)
 
@@ -340,6 +343,58 @@ print(disposition_response.status_code)
 print(disposition_response.headers)
 print(disposition_response.text)
 ```
+<a name="#paubox-forms-api"></a>
+## Paubox Forms API
+
+The Paubox Forms API lets you retrieve form definitions and submit responses. These endpoints are **public** — no API key is required.
+
+### Getting a Form
+
+Retrieve a form's metadata, HTML, JSON schema, and CSS by its UUID.
+
+```python
+import paubox
+
+forms_client = paubox.PauboxFormsClient()
+response = forms_client.get_form("your-form-uuid-here")
+print(response.status_code)   # 200
+print(response.to_dict)       # dict with id, title, form_html, form_json, form_css, etc.
+```
+
+### Submitting a Form
+
+```python
+import paubox
+
+forms_client = paubox.PauboxFormsClient()
+response = forms_client.submit_form(
+    "your-form-uuid-here",
+    form_data={"first_name": "Jane", "last_name": "Doe", "email": "jane@example.com"}
+)
+print(response.status_code)   # 201
+```
+
+### Submitting a Form with File Attachments
+
+Attachments must be base64-encoded. Maximum total request size is 250 MB.
+
+```python
+import paubox
+import base64
+
+forms_client = paubox.PauboxFormsClient()
+
+with open("consent.pdf", "rb") as f:
+    encoded = base64.b64encode(f.read()).decode("utf-8")
+
+response = forms_client.submit_form(
+    "your-form-uuid-here",
+    form_data={"first_name": "Jane", "signature": "{signature_field}"},
+    attachments=[{"name": "consent.pdf", "content": encoded}]
+)
+print(response.status_code)   # 201
+```
+
 <a name="#contributing"></a>
 ## Contributing
 The Paubox-python3 SDK is maintained by [Paubox, Inc.](https://www.paubox.com)
