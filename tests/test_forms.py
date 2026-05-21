@@ -41,7 +41,7 @@ class TestPauboxFormsClientInit(TestCase):
     def test_default_base_url(self):
         client = PauboxFormsClient()
         self.assertEqual(client.base_url, FORMS_BASE_URL)
-        self.assertEqual(client.base_url, "https://next.paubox.com")
+        self.assertEqual(client.base_url, "https://apx.paubox.com/forms")
 
     def test_custom_base_url(self):
         client = PauboxFormsClient(base_url="http://localhost:3000")
@@ -71,10 +71,10 @@ class TestGetForm(TestCase):
     @patch("paubox.forms.requests.get")
     def test_get_form_calls_correct_url(self, mock_get):
         mock_get.return_value = _mock_response(status_code=200, text="{}")
-        client = PauboxFormsClient(base_url="https://next.paubox.com")
+        client = PauboxFormsClient(base_url="https://apx.paubox.com/forms")
         client.get_form(FORM_ID)
         mock_get.assert_called_once_with(
-            f"https://next.paubox.com/public/form_data/{FORM_ID}",
+            f"https://apx.paubox.com/forms/public/form_data/{FORM_ID}",
             headers={"Content-Type": "application/json"},
         )
 
@@ -119,11 +119,11 @@ class TestSubmitForm(TestCase):
     @patch("paubox.forms.requests.post")
     def test_submit_form_calls_correct_url(self, mock_post):
         mock_post.return_value = _mock_response(status_code=201, text="")
-        client = PauboxFormsClient(base_url="https://next.paubox.com")
+        client = PauboxFormsClient(base_url="https://apx.paubox.com/forms")
         client.submit_form(FORM_ID, form_data={"x": "y"})
         mock_post.assert_called_once()
         args, kwargs = mock_post.call_args
-        self.assertEqual(args[0], f"https://next.paubox.com/api/forms/{FORM_ID}/submissions")
+        self.assertEqual(args[0], f"https://apx.paubox.com/forms/api/forms/{FORM_ID}/submissions")
 
     @patch("paubox.forms.requests.post")
     def test_submit_form_sends_no_auth_header(self, mock_post):

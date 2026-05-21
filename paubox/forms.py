@@ -8,7 +8,7 @@ import requests
 from .paubox import Response
 from .helpers.errors import handle_error
 
-FORMS_BASE_URL = "https://next.paubox.com"
+FORMS_BASE_URL = "https://apx.paubox.com/forms"
 
 
 class PauboxFormsClient(object):
@@ -16,7 +16,7 @@ class PauboxFormsClient(object):
 
     def __init__(self, base_url=FORMS_BASE_URL):
         """
-        :param base_url: Forms API base URL. Defaults to https://next.paubox.com.
+        :param base_url: Forms API base URL. Defaults to https://apx.paubox.com/forms.
         :type base_url: str
         """
         self.base_url = base_url
