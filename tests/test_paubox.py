@@ -6,7 +6,6 @@ Paubox Test Suite
 import unittest
 from unittest import TestCase
 import base64
-import os
 
 from paubox import paubox
 from paubox.helpers.mail import Mail
@@ -164,5 +163,6 @@ class TestPaubox(unittest.TestCase):
         self.assertTrue('errors' not in get_response.text)
 
 
-SUITE = unittest.TestLoader().loadTestsFromTestCase(TestPaubox)
-unittest.TextTestRunner(verbosity=2).run(SUITE)
+if __name__ == "__main__":
+    SUITE = unittest.TestLoader().loadTestsFromTestCase(TestPaubox)
+    unittest.TextTestRunner(verbosity=2).run(SUITE)
