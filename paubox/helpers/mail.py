@@ -29,9 +29,9 @@ class Mail(object):
         :params optional_headers: Additional optional headers for the email.
         :type optional_headers: dict
         """
-        self._from_ = None
-        self._subject = None
-        self._recipients = []
+        self._from_ = from_ or None
+        self._subject = subject or None
+        self._recipients = recipients or []
         self._content = None
         self._bcc = None
         self._cc = []
@@ -39,38 +39,24 @@ class Mail(object):
         self._attachments = []
         self._forceSecureNotification = None
         self._allowNonTLS = False
-        if from_:
-            self._from_ = from_
-        if subject:
-            self._subject = subject
-        if recipients:
-            self._recipients = recipients
         if content:
-            if 'text/html' in content:
-                _html_text = content.get('text/html')
-                if(_html_text != None and _html_text != ""):
-                    # _html_text (str) is encoded to a bytes-like object using _html_text.encode('utf-8')
-                    # and then encode that bytes-like obj with Base64
-                    # and then decode the Base64 into a string representation of the b64 conversion.
-                    # we will send the string representation of the b64 conversion.
-                    encoded_html = base64.b64encode(_html_text.encode('utf-8')).decode('utf-8')
-                    content['text/html'] = encoded_html
-
+            _html_text = content.get('text/html')
+            if _html_text is not None and _html_text != "":
+                # _html_text (str) is encoded to a bytes-like object using _html_text.encode('utf-8')
+                # and then encode that bytes-like obj with Base64
+                # and then decode the Base64 into a string representation of the b64 conversion.
+                # we will send the string representation of the b64 conversion.
+                content['text/html'] = base64.b64encode(
+                    _html_text.encode('utf-8')).decode('utf-8')
             self._content = content
 
         if optional_headers:
-            if 'bcc' in optional_headers:
-                self._bcc = optional_headers['bcc']
-            if 'cc' in optional_headers:
-                self._cc = optional_headers['cc']
-            if 'reply_to' in optional_headers:
-                self._reply_to = optional_headers['reply_to']
-            if 'attachments' in optional_headers:
-                self._attachments = optional_headers['attachments']
-            if 'forceSecureNotification' in optional_headers:
-                self._forceSecureNotification = optional_headers['forceSecureNotification']
-            if 'allowNonTLS' in optional_headers:
-                self._allowNonTLS = optional_headers['allowNonTLS']
+            self._bcc = optional_headers.get('bcc')
+            self._cc = optional_headers.get('cc', [])
+            self._reply_to = optional_headers.get('reply_to')
+            self._attachments = optional_headers.get('attachments', [])
+            self._forceSecureNotification = optional_headers.get('forceSecureNotification')
+            self._allowNonTLS = optional_headers.get('allowNonTLS', False)
 
     def get(self):
         """Formats the Email to a Send Request for the Paubox Email API"""
@@ -80,22 +66,18 @@ class Mail(object):
         mail["data"]["message"]["headers"] = headers
         mail["data"]["message"]["content"] = self._content
 
-        if hasattr(self, '_bcc') and self._bcc:
+        if self._bcc:
             mail["data"]["message"]["bcc"] = self._bcc
-        if hasattr(self, '_cc') and self._cc:
+        if self._cc:
             mail["data"]["message"]["cc"] = self._cc
-        if hasattr(self, '_reply_to') and self._reply_to:
+        if self._reply_to:
             mail["data"]["message"]["headers"]["reply-to"] = self._reply_to
-        if hasattr(self, '_attachments') and self._attachments:
+        if self._attachments:
             mail["data"]["message"]["attachments"] = self._attachments
-        if hasattr(self, '_forceSecureNotification'):
-            self._forceSecureNotification = self._return_valid_forcesecurenotification_value()
-            if(self._forceSecureNotification != None):
-                mail["data"]["message"]["forceSecureNotification"] = self._forceSecureNotification
-        if hasattr(self, '_allowNonTLS'):
-            mail["data"]["message"]["allowNonTLS"] = self._allowNonTLS
-        else:
-            mail["data"]["message"]["allowNonTLS"] = False
+        self._forceSecureNotification = self._return_valid_forcesecurenotification_value()
+        if self._forceSecureNotification is not None:
+            mail["data"]["message"]["forceSecureNotification"] = self._forceSecureNotification
+        mail["data"]["message"]["allowNonTLS"] = self._allowNonTLS
         return mail
 
     def _return_valid_forcesecurenotification_value(self):
@@ -103,17 +85,8 @@ class Mail(object):
 
         _forceSecureNotification = self._forceSecureNotification
         if isinstance(_forceSecureNotification, str):
-            if(_forceSecureNotification == None or _forceSecureNotification == ""):
-                return None
-            else:
-                _forceSecureNotificationValue = _forceSecureNotification.strip().lower()
-                if _forceSecureNotificationValue == 'true':
-                    return True
-                elif _forceSecureNotificationValue == 'false':
-                    return False
-                else:
-                    return None
-        elif isinstance(_forceSecureNotification, bool):
+            return {'true': True, 'false': False}.get(
+                _forceSecureNotification.strip().lower())
+        if isinstance(_forceSecureNotification, bool):
             return _forceSecureNotification
-        else:
-            return None
+        return None

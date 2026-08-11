@@ -69,8 +69,8 @@ class PauboxApiClient(object):
         """
         Send messages through the Paubox API
         """
-        key = "" if self.api_key == None else self.api_key
-        host = "http://localhost" if self.host == None else self.host
+        key = "" if self.api_key is None else self.api_key
+        host = "http://localhost" if self.host is None else self.host
         headers = {
             'Content-Type':'application/json',
             'Authorization': "Token token=" + key
@@ -80,15 +80,14 @@ class PauboxApiClient(object):
             response = requests.post(url, json=mail, headers=headers)
             response.raise_for_status()
         except requests.exceptions.HTTPError as error:
-            error = handle_error(error)
-            raise error
+            raise handle_error(error)
         return Response(response)
 
     def get(self, tracking_code):
         """
         Get the disposition of messages through the Paubox API
         """
-        key = "" if self.api_key == None else self.api_key
+        key = "" if self.api_key is None else self.api_key
         params = {'sourceTrackingId': tracking_code}
         headers = {
             'Content-Type':'application/json',
@@ -99,6 +98,5 @@ class PauboxApiClient(object):
             response = requests.get(url, params=params, headers=headers)
             response.raise_for_status()
         except requests.exceptions.HTTPError as error:
-            error = handle_error(error)
-            raise error
+            raise handle_error(error)
         return Response(response)

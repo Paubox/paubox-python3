@@ -189,6 +189,6 @@ class TestSubmitForm(TestCase):
             client.submit_form(FORM_ID, form_data={"x": "y"})
 
 
-SUITE = unittest.TestLoader().loadTestsFromModule(__import__(__name__))
 if __name__ == "__main__":
+    SUITE = unittest.TestLoader().loadTestsFromModule(__import__(__name__))
     unittest.TextTestRunner(verbosity=2).run(SUITE)
