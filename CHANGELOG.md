@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# v1.2.0 / 2026-08-11
+### 🚀 New Features
+- Add authenticated Paubox Forms endpoints to `PauboxFormsClient` (scoped API keys with the `forms` scope, sent as `Authorization: Bearer <key>`; JWTs also accepted)
+  - `PauboxFormsClient(base_url, api_key=None)` — new optional `api_key` constructor argument (backward compatible)
+  - Form management: `list_forms(...)`, `get_form_by_id(form_id)`, `create_form(...)`, `update_form(...)`, `archive_form(form_id)`, `unarchive_form(form_id)`, `copy_form(form_id, title)`, `get_form_stats(customer_id=None)`
+  - Submissions: `list_submissions(...)`, `export_submissions_csv(form_id, submission_id=None)`, `export_submission_pdf(form_id, submission_id)`
+- Add `Response.content` property exposing the raw response bytes (for CSV/PDF exports)
+- Existing public endpoints (`get_form`, `submit_form`) are unchanged and still send no auth headers
+- Add unit tests for all new methods (no live credentials required)
+
 # v1.1.0 / 2026-05-21
 ### 🚀 New Features
 - Add `PauboxFormsClient` with support for the Paubox Forms API (public endpoints, no API key required)
