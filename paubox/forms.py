@@ -6,6 +6,9 @@ require a Paubox scoped API key with the 'forms' scope (or a JWT), sent as
 a Bearer token.
 """
 
+import uuid
+from urllib.parse import quote
+
 import requests
 from .paubox import Response
 from .helpers.errors import handle_error
@@ -72,6 +75,58 @@ class PauboxFormsClient(object):
             cleaned[key] = value
         return cleaned
 
+    @staticmethod
+    def _path_segment(value, name, require_uuid=True):
+        """
+        Sanitize a caller-supplied value before interpolating it into a URL path.
+
+        Without this, a value containing "..", "/", "?" or "#" changes which
+        endpoint is called. `requests` collapses dot-segments while preparing a
+        URL, so the retargeting happens client-side — no server or proxy
+        involvement is needed. An application that passes user input through to
+        a form or submission id would otherwise be able to reach an endpoint it
+        did not intend to call, and a rewritten path can leave the /forms base
+        path on the same host, taking the Authorization header with it (requests
+        only strips that header across a host change).
+
+        :param value: Caller-supplied path segment — a form or submission UUID.
+        :type value: str
+        :param name: Argument name, used in the error message.
+        :type name: str
+        :param require_uuid: Reject anything that is not a UUID. True for the
+            authenticated endpoints, which are new in 1.2.0 and so have no
+            existing callers to stay compatible with. False for the
+            long-standing public endpoints, where percent-encoding alone closes
+            the issue without rejecting ids that used to be accepted.
+        :type require_uuid: bool
+        :returns: The value, percent-encoded for use as a single path segment.
+        :rtype: str
+        :raises ValueError: if the value is empty, or is not a UUID while
+            require_uuid is True.
+        """
+        if value is None or value == "":
+            raise ValueError(f"{name} is required and must not be empty.")
+        value = str(value)
+        # "." and ".." are dot-segments: they are resolved away rather than sent,
+        # so they always retarget the request. Percent-encoding does not help —
+        # quote() leaves "." alone (it is unreserved), and requests un-escapes
+        # %2E during preparation anyway. Neither is ever a valid id, so reject
+        # them outright rather than depending on requests' internal ordering.
+        if value in (".", ".."):
+            raise ValueError(
+                f"{name} must not be {value!r}, which is not a valid id."
+            )
+        if require_uuid:
+            try:
+                uuid.UUID(value)
+            except (AttributeError, TypeError, ValueError):
+                raise ValueError(
+                    f"{name} must be a UUID, got {value!r}."
+                )
+        # Encoded even after UUID validation, so that this stays safe if the
+        # validation above is ever relaxed.
+        return quote(value, safe="")
+
     def get_form(self, form_id):
         """
         Retrieve a form's metadata, HTML, JSON schema, and CSS by UUID.
@@ -84,8 +139,10 @@ class PauboxFormsClient(object):
         :type form_id: str
         :returns: Response containing the form definition.
         :rtype: Response
+        :raises ValueError: if form_id is empty or a bare dot-segment.
         :raises requests.exceptions.HTTPError: on 404 or other HTTP errors.
         """
+        form_id = self._path_segment(form_id, "form_id", require_uuid=False)
         url = f"{self.base_url}/public/form_data/{form_id}"
         try:
             response = requests.get(url, headers={"Content-Type": "application/json"})
@@ -112,12 +169,14 @@ class PauboxFormsClient(object):
         :type attachments: list or None
         :returns: Response with status 201 and no body on success.
         :rtype: Response
-        :raises ValueError: if form_data is None or empty.
+        :raises ValueError: if form_data is None or empty, or if form_id is
+            empty or a bare dot-segment.
         :raises requests.exceptions.HTTPError: on 400, 404, or other HTTP errors.
         """
         if not form_data:
             raise ValueError("form_data is required and must not be empty")
 
+        form_id = self._path_segment(form_id, "form_id", require_uuid=False)
         url = f"{self.base_url}/api/forms/{form_id}/submissions"
         payload = {"form_data": form_data}
         if attachments:
@@ -197,11 +256,13 @@ class PauboxFormsClient(object):
         :type form_id: str
         :returns: Response with {"data": {...form...}}.
         :rtype: Response
-        :raises ValueError: if the client has no api_key.
+        :raises ValueError: if the client has no api_key, or if form_id
+            is not a UUID.
         :raises requests.exceptions.HTTPError: on 401, 403, 404, or other
             HTTP errors.
         """
         headers = self._auth_headers()
+        form_id = self._path_segment(form_id, "form_id")
         url = f"{self.base_url}/api/forms/{form_id}"
         try:
             response = requests.get(url, headers=headers)
@@ -316,11 +377,13 @@ class PauboxFormsClient(object):
         :returns: Response with {"detail": "Form updated successfully",
             "form_id": "<id>"}.
         :rtype: Response
-        :raises ValueError: if the client has no api_key.
+        :raises ValueError: if the client has no api_key, or if form_id
+            is not a UUID.
         :raises requests.exceptions.HTTPError: on 401, 403, 404 (form not
             found), or other HTTP errors.
         """
         headers = self._auth_headers()
+        form_id = self._path_segment(form_id, "form_id")
         url = f"{self.base_url}/api/forms/{form_id}"
         candidates = {
             "title": title,
@@ -349,10 +412,12 @@ class PauboxFormsClient(object):
         :type form_id: str
         :returns: Response with {"detail": "Form archived."}.
         :rtype: Response
-        :raises ValueError: if the client has no api_key.
+        :raises ValueError: if the client has no api_key, or if form_id
+            is not a UUID.
         :raises requests.exceptions.HTTPError: on 401, 403, or other HTTP errors.
         """
         headers = self._auth_headers()
+        form_id = self._path_segment(form_id, "form_id")
         url = f"{self.base_url}/api/forms/{form_id}/archive"
         try:
             response = requests.post(url, headers=headers)
@@ -371,10 +436,12 @@ class PauboxFormsClient(object):
         :type form_id: str
         :returns: Response with {"detail": "Form unarchived."}.
         :rtype: Response
-        :raises ValueError: if the client has no api_key.
+        :raises ValueError: if the client has no api_key, or if form_id
+            is not a UUID.
         :raises requests.exceptions.HTTPError: on 401, 403, or other HTTP errors.
         """
         headers = self._auth_headers()
+        form_id = self._path_segment(form_id, "form_id")
         url = f"{self.base_url}/api/forms/{form_id}/unarchive"
         try:
             response = requests.post(url, headers=headers)
@@ -461,11 +528,13 @@ class PauboxFormsClient(object):
             string), storage_type, storage_url, submitter_email, recipients,
             attachment_name, attachment_url, attachment_type, and created_at.
         :rtype: Response
-        :raises ValueError: if the client has no api_key.
+        :raises ValueError: if the client has no api_key, or if form_id
+            is not a UUID.
         :raises requests.exceptions.HTTPError: on 401, 403, 404 (form not
             found), or other HTTP errors.
         """
         headers = self._auth_headers()
+        form_id = self._path_segment(form_id, "form_id")
         url = f"{self.base_url}/api/forms/{form_id}/submissions"
         params = self._query_params({
             "submission_id": submission_id,
@@ -497,13 +566,16 @@ class PauboxFormsClient(object):
         :returns: Response whose content property holds the CSV bytes
             (text/csv attachment).
         :rtype: Response
-        :raises ValueError: if the client has no api_key.
+        :raises ValueError: if the client has no api_key, or if form_id
+            or submission_id is not a UUID.
         :raises requests.exceptions.HTTPError: on 401, 403, 404, or other
             HTTP errors.
         """
         headers = self._auth_headers()
+        form_id = self._path_segment(form_id, "form_id")
         url = f"{self.base_url}/api/forms/{form_id}/submissions/submission-csv"
         if submission_id is not None:
+            submission_id = self._path_segment(submission_id, "submission_id")
             url = f"{url}/{submission_id}"
         try:
             response = requests.get(url, headers=headers)
@@ -525,11 +597,14 @@ class PauboxFormsClient(object):
         :returns: Response whose content property holds the PDF bytes
             (application/pdf attachment).
         :rtype: Response
-        :raises ValueError: if the client has no api_key.
+        :raises ValueError: if the client has no api_key, or if form_id
+            or submission_id is not a UUID.
         :raises requests.exceptions.HTTPError: on 401, 403, 404, or other
             HTTP errors.
         """
         headers = self._auth_headers()
+        form_id = self._path_segment(form_id, "form_id")
+        submission_id = self._path_segment(submission_id, "submission_id")
         url = f"{self.base_url}/api/forms/{form_id}/submissions/{submission_id}/submission-pdf"
         try:
             response = requests.get(url, headers=headers)

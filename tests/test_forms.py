@@ -768,6 +768,173 @@ class TestResponseContent(TestCase):
         self.assertEqual(response.to_dict, {"a": 1})
 
 
+# Hostile values for anything interpolated into a URL path. Each one changes
+# which endpoint is called if the segment reaches the URL unencoded, because
+# `requests` collapses dot-segments while preparing the URL.
+HOSTILE_SEGMENTS = [
+    "../submission-csv",          # single -> bulk export
+    "..",                         # export -> list endpoint
+    "../../../../../v1/messages",  # escapes /forms entirely, same host
+    "../../../admin/customers",
+    "abc#",                       # splices a fragment, dropping later segments
+    "abc?items=100",              # splices a query, overriding our own params
+    "a/b",
+    "%2e%2e/x",
+]
+
+
+class TestPathSegmentSanitization(TestCase):
+    """
+    A caller-supplied form or submission id must never be able to change which
+    endpoint is called. Assertions are on the URL the client *builds* — a
+    retargeted request can return a perfectly valid 200, so status is not a
+    useful signal here.
+    """
+
+    def _requested_url(self, mock):
+        args, kwargs = mock.call_args
+        return args[0] if args else kwargs["url"]
+
+    def _prepared_path(self, url, params=None):
+        """Resolve the URL the way requests will, including dot-segments."""
+        return requests.Request("GET", url, params=params).prepare().url
+
+    def test_authenticated_methods_reject_non_uuid_form_id(self):
+        client = PauboxFormsClient(api_key=API_KEY)
+        calls = [
+            ("get_form_by_id", lambda c, v: c.get_form_by_id(v)),
+            ("update_form", lambda c, v: c.update_form(v, title="x")),
+            ("archive_form", lambda c, v: c.archive_form(v)),
+            ("unarchive_form", lambda c, v: c.unarchive_form(v)),
+            ("list_submissions", lambda c, v: c.list_submissions(v)),
+            ("export_submissions_csv", lambda c, v: c.export_submissions_csv(v)),
+            ("export_submission_pdf",
+             lambda c, v: c.export_submission_pdf(v, SUBMISSION_ID)),
+        ]
+        for name, call in calls:
+            for hostile in HOSTILE_SEGMENTS:
+                with self.subTest(method=name, value=hostile):
+                    with patch("paubox.forms.requests.get") as mock_get, \
+                            patch("paubox.forms.requests.post") as mock_post, \
+                            patch("paubox.forms.requests.put") as mock_put:
+                        with self.assertRaises(ValueError):
+                            call(client, hostile)
+                        mock_get.assert_not_called()
+                        mock_post.assert_not_called()
+                        mock_put.assert_not_called()
+
+    def test_export_submissions_csv_rejects_traversing_submission_id(self):
+        """The escalation that motivated this: single-row export -> bulk export."""
+        client = PauboxFormsClient(api_key=API_KEY)
+        for hostile in HOSTILE_SEGMENTS:
+            with self.subTest(value=hostile):
+                with patch("paubox.forms.requests.get") as mock_get:
+                    with self.assertRaises(ValueError):
+                        client.export_submissions_csv(
+                            FORM_ID, submission_id=hostile
+                        )
+                    mock_get.assert_not_called()
+
+    def test_export_submission_pdf_rejects_traversing_submission_id(self):
+        client = PauboxFormsClient(api_key=API_KEY)
+        for hostile in HOSTILE_SEGMENTS:
+            with self.subTest(value=hostile):
+                with patch("paubox.forms.requests.get") as mock_get:
+                    with self.assertRaises(ValueError):
+                        client.export_submission_pdf(FORM_ID, hostile)
+                    mock_get.assert_not_called()
+
+    def test_public_endpoints_encode_rather_than_reject(self):
+        """
+        get_form/submit_form predate this change, so they must not start
+        rejecting ids that used to be accepted — but the segment still has to be
+        encoded so it cannot retarget the request. The bare dot-segments are the
+        one exception: they are rejected everywhere (see the test below).
+        """
+        client = PauboxFormsClient()
+        for hostile in [s for s in HOSTILE_SEGMENTS if s not in (".", "..")]:
+            with self.subTest(value=hostile):
+                with patch("paubox.forms.requests.get") as mock_get:
+                    mock_get.return_value = _mock_response(200, "{}")
+                    client.get_form(hostile)
+                    url = self._requested_url(mock_get)
+                prefix = f"{FORMS_BASE_URL}/public/form_data/"
+                self.assertTrue(
+                    url.startswith(prefix),
+                    f"{hostile!r} escaped the endpoint: {url}",
+                )
+                # The invariant that matters: after requests resolves the URL it
+                # must still address this endpoint. Encoded dots may survive
+                # (..%2Fx is inert — it is not a dot-segment); what must not
+                # happen is prepare_url resolving them into a different path.
+                self.assertTrue(
+                    self._prepared_path(url).startswith(prefix),
+                    f"{hostile!r} retargeted the request: "
+                    f"{self._prepared_path(url)}",
+                )
+
+    def test_dot_segments_are_rejected_on_public_endpoints_too(self):
+        """
+        "." and ".." cannot be neutralized by encoding — quote() leaves "."
+        alone, and requests un-escapes %2E during preparation. Neither is a
+        valid id, so both are rejected even where we otherwise stay permissive.
+        """
+        client = PauboxFormsClient()
+        for bad in [".", ".."]:
+            with self.subTest(value=bad):
+                with patch("paubox.forms.requests.get") as mock_get, \
+                        patch("paubox.forms.requests.post") as mock_post:
+                    with self.assertRaises(ValueError):
+                        client.get_form(bad)
+                    with self.assertRaises(ValueError):
+                        client.submit_form(bad, {"a": "b"})
+                    mock_get.assert_not_called()
+                    mock_post.assert_not_called()
+
+    def test_empty_and_none_ids_are_rejected_before_any_request(self):
+        client = PauboxFormsClient(api_key=API_KEY)
+        for bad in ["", None]:
+            with self.subTest(value=bad):
+                with patch("paubox.forms.requests.get") as mock_get:
+                    with self.assertRaises(ValueError):
+                        client.get_form_by_id(bad)
+                    with self.assertRaises(ValueError):
+                        client.export_submission_pdf(FORM_ID, bad)
+                    mock_get.assert_not_called()
+
+    def test_valid_uuids_still_build_the_documented_urls(self):
+        """The hardening must not change the happy path."""
+        client = PauboxFormsClient(api_key=API_KEY)
+        with patch("paubox.forms.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(200, "{}")
+            client.export_submission_pdf(FORM_ID, SUBMISSION_ID)
+            self.assertEqual(
+                self._requested_url(mock_get),
+                f"{FORMS_BASE_URL}/api/forms/{FORM_ID}/submissions/"
+                f"{SUBMISSION_ID}/submission-pdf",
+            )
+        with patch("paubox.forms.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(200, "{}")
+            client.export_submissions_csv(FORM_ID, submission_id=SUBMISSION_ID)
+            self.assertEqual(
+                self._requested_url(mock_get),
+                f"{FORMS_BASE_URL}/api/forms/{FORM_ID}/submissions/"
+                f"submission-csv/{SUBMISSION_ID}",
+            )
+
+    def test_uppercase_uuid_is_accepted_unchanged(self):
+        """UUIDs are hex; case must not be treated as hostile."""
+        client = PauboxFormsClient(api_key=API_KEY)
+        upper = FORM_ID.upper()
+        with patch("paubox.forms.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(200, "{}")
+            client.get_form_by_id(upper)
+            self.assertEqual(
+                self._requested_url(mock_get),
+                f"{FORMS_BASE_URL}/api/forms/{upper}",
+            )
+
+
 if __name__ == "__main__":
     SUITE = unittest.TestLoader().loadTestsFromModule(__import__(__name__))
     unittest.TextTestRunner(verbosity=2).run(SUITE)
