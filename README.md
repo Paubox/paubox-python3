@@ -14,6 +14,7 @@ The Paubox Email API allows your application to send secure, HIPAA compliant ema
    *  [Sending Email](#sending-messages-with-the-paubox-mail-helper)
    *  [Checking Email Dispositions](#checking-email-dispositions)
    *  [Paubox Forms API](#paubox-forms-api)
+   *  [Paubox Forms — authenticated endpoints (scoped API keys)](#paubox-forms-authenticated)
 *  [Contributing](#contributing)
 *  [License](#license)
 
@@ -393,6 +394,95 @@ response = forms_client.submit_form(
     attachments=[{"name": "consent.pdf", "content": encoded}]
 )
 print(response.status_code)   # 201
+```
+
+<a name="#paubox-forms-authenticated"></a>
+## Paubox Forms — authenticated endpoints (scoped API keys)
+
+Beyond the public endpoints above, `PauboxFormsClient` can manage forms and retrieve/export submissions. These endpoints require authentication:
+
+*  Pass a **Paubox scoped API key** carrying the **`forms` scope** as the `api_key` constructor argument. The key is sent as a Bearer token (`Authorization: Bearer <key>`) on every authenticated call. JWTs are also accepted.
+*  The public endpoints (`get_form`, `submit_form`) never send auth headers, even when `api_key` is set.
+*  Calling an authenticated method without an `api_key` raises `ValueError` before any network call.
+
+```python
+import paubox
+
+forms_client = paubox.PauboxFormsClient(api_key="YOUR_SCOPED_API_KEY")
+```
+
+### Managing Forms
+
+```python
+import paubox
+
+forms_client = paubox.PauboxFormsClient(api_key="YOUR_SCOPED_API_KEY")
+
+# List forms (paginated; pass the customer_id your key is scoped to —
+# API-key calls that omit it are rejected with 403 Forbidden)
+response = forms_client.list_forms(customer_id=12345, search="intake", order="asc", order_by="title", page=1, items=25)
+print(response.to_dict["results"])      # list of forms
+print(response.to_dict["page_info"])    # {"count", "pages", "page", "items"}
+
+# Get a single form (authenticated variant of get_form)
+response = forms_client.get_form_by_id("your-form-uuid-here")
+print(response.to_dict["data"])
+
+# Create a form
+response = forms_client.create_form(
+    title="Patient Intake Form",
+    form_json={"fields": [{"name": "first_name", "type": "text"}]},
+    customer_id=12345,
+    description="New patient intake",
+    recipient="intake@yourdomain.com,frontdesk@yourdomain.com",
+    active=True
+)
+print(response.to_dict["id"])           # UUID of the new form
+
+# Update a form — only the arguments you pass are changed
+response = forms_client.update_form("your-form-uuid-here", title="Updated Title", active=False)
+print(response.to_dict["detail"])       # "Form updated successfully"
+
+# Archive / unarchive (archiving also deactivates the form)
+forms_client.archive_form("your-form-uuid-here")
+forms_client.unarchive_form("your-form-uuid-here")
+
+# Copy a form
+response = forms_client.copy_form("your-form-uuid-here", "Copy of Patient Intake Form")
+print(response.to_dict["id"])           # UUID of the copy
+
+# Form stats
+response = forms_client.get_form_stats()
+print(response.to_dict)                 # {"active_form_count", "total_submission_count", "submissions_last_7_days"}
+```
+
+### Retrieving and Exporting Submissions
+
+```python
+import paubox
+
+forms_client = paubox.PauboxFormsClient(api_key="YOUR_SCOPED_API_KEY")
+
+# List a form's submissions (paginated)
+response = forms_client.list_submissions("your-form-uuid-here", page=1, items=50)
+for submission in response.to_dict["data"]:
+    print(submission["id"], submission["submitter_email"])
+    print(submission["form_data"])      # JSON string — parse with json.loads if needed
+
+# Export all submissions as CSV
+response = forms_client.export_submissions_csv("your-form-uuid-here")
+with open("submissions.csv", "wb") as f:
+    f.write(response.content)
+
+# Export a single submission as CSV
+response = forms_client.export_submissions_csv("your-form-uuid-here", "submission-uuid-here")
+with open("submission.csv", "wb") as f:
+    f.write(response.content)
+
+# Export a single submission as PDF
+response = forms_client.export_submission_pdf("your-form-uuid-here", "submission-uuid-here")
+with open("submission.pdf", "wb") as f:
+    f.write(response.content)
 ```
 
 <a name="#contributing"></a>

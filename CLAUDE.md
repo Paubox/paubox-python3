@@ -5,7 +5,7 @@
 Python3 SDK for Paubox APIs. Provides two independent clients:
 
 - **`PauboxApiClient`** — HIPAA-compliant transactional email (requires API key)
-- **`PauboxFormsClient`** — public form retrieval and submission (no auth required)
+- **`PauboxFormsClient`** — form retrieval and submission (public, no auth) plus form management and submission export (requires a scoped API key)
 
 ## Directory Structure
 
@@ -54,9 +54,9 @@ PYTHONPATH=. python tests/test_paubox.py
 ## Key Design Decisions
 
 - **`Response` class lives in `paubox/paubox.py`** and is imported by `forms.py` to avoid a breaking change. If you move it, update all importers.
-- **`PauboxFormsClient` accepts an optional `base_url`** constructor argument for test injection (no real HTTP calls in unit tests).
+- **`PauboxFormsClient` accepts an optional `base_url`** constructor argument for test injection (no real HTTP calls in unit tests), and an optional `api_key` argument for the authenticated endpoints.
 - **Forms endpoints use `https://apx.paubox.com/forms`**; Email endpoints use a per-customer host set via `PAUBOX_HOST`.
-- **No auth headers are sent for Forms API calls** — these are public endpoints called by form respondents.
+- **Public Forms endpoints (`get_form`, `submit_form`) send no auth headers** — they are called by form respondents. The management and submission-export endpoints send `Authorization: Bearer <scoped api key>` (a Paubox scoped API key with the `forms` scope; JWTs also accepted).
 - **`submit_form` validates `form_data` locally** before making the network call, raising `ValueError` if it is falsy (mirrors the API's 400 response).
 
 ## Environment Variables

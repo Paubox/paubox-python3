@@ -16,6 +16,7 @@ class Response(object):
         self._status_code = response.status_code
         self._headers = response.headers
         self._text = response.text
+        self._content = response.content
 
     @property
     def status_code(self):
@@ -37,6 +38,13 @@ class Response(object):
         :return: Body of Paubox API response
         """
         return self._text
+
+    @property
+    def content(self):
+        """
+        :return: Body of Paubox API response as raw bytes
+        """
+        return self._content
 
     @property
     def to_dict(self):
