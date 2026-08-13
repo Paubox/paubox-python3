@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# v1.3.0 / 2026-08-13
+### 🚀 New Features
+- A username (per-customer endpoint name) is no longer required to authenticate the Paubox APIs — an API key alone is enough
+- `PauboxApiClient` `host` is now optional and defaults to `https://api.paubox.com/v1`, so `PauboxApiClient("YOUR_API_KEY")` works with no host configured. The `PAUBOX_HOST` environment variable and the `host` constructor argument are still honored as overrides (backward compatible)
+- Forms base URL moved from `https://apx.paubox.com/forms` to `https://api.paubox.com/forms`
+
+### 🎉 Enhancements
+- Remove the `http://localhost` fallback in `PauboxApiClient.send()` — the client now always uses the configured host (or the new default)
+
 # v1.2.0 / 2026-08-11
 ### 🚀 New Features
 - Add authenticated Paubox Forms endpoints to `PauboxFormsClient` (scoped API keys with the `forms` scope, sent as `Authorization: Bearer <key>`; JWTs also accepted)

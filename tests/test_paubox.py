@@ -17,6 +17,26 @@ with open("tests/config.cfg") as config_file:
 TestCase.maxDiff = None
 
 
+def _optional_config(cfg, key):
+    """Return cfg[key], or None when the key is absent from the config."""
+    try:
+        return cfg[key]
+    except Exception:
+        return None
+
+
+def _make_client():
+    """Build a PauboxApiClient from the test config.
+
+    PAUBOX_HOST is optional — when absent, the client is constructed with
+    just the API key and uses the SDK's default base URL.
+    """
+    host = _optional_config(test_credentials, "PAUBOX_HOST")
+    if host:
+        return paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"], host)
+    return paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"])
+
+
 class TestPaubox(unittest.TestCase):
     """Paubox Python SDK Test Suite"""
 
@@ -115,7 +135,7 @@ class TestPaubox(unittest.TestCase):
 
     def test_sending(self):
         """Test send email functionality"""
-        paubox_client = paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"], test_credentials["PAUBOX_HOST"])
+        paubox_client = _make_client()
         recipients = ['recipient1@example.com']
         from_ = test_credentials["APPROVED_SENDER"]
         subject = 'Testing!'
@@ -154,7 +174,7 @@ class TestPaubox(unittest.TestCase):
         }
         mail = Mail(from_, subject, recipients, content, optional_headers)
 
-        paubox_client = paubox.PauboxApiClient(test_credentials["PAUBOX_API_KEY"], test_credentials["PAUBOX_HOST"])
+        paubox_client = _make_client()
         send_response = paubox_client.send(mail.get())
         source_tracking_id = send_response.to_dict['sourceTrackingId']
 
