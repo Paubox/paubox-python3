@@ -9,6 +9,8 @@ import os
 import requests
 from .helpers.errors import handle_error
 
+PAUBOX_API_BASE_URL = "https://api.paubox.com/v1"
+
 class Response(object):
     """Response from Paubox Transactional Email API"""
 
@@ -67,23 +69,24 @@ class PauboxApiClient(object):
         Construct API client to the Paubox Transactional Email API
         :param api_key: Paubox API key.
         :type api_key: basestring
-        :params host: Paubox endpoint base URL for API calls
+        :params host: Optional base URL override for API calls. Defaults to
+            PAUBOX_API_BASE_URL; the PAUBOX_HOST environment variable is also
+            an optional override.
         :type host: basestring
         """
         self.api_key = api_key
-        self.host = host
+        self.host = host or PAUBOX_API_BASE_URL
 
     def send(self, mail):
         """
         Send messages through the Paubox API
         """
         key = "" if self.api_key is None else self.api_key
-        host = "http://localhost" if self.host is None else self.host
         headers = {
             'Content-Type':'application/json',
             'Authorization': "Token token=" + key
         }
-        url = host + '/messages'
+        url = self.host + '/messages'
         try:
             response = requests.post(url, json=mail, headers=headers)
             response.raise_for_status()

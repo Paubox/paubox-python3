@@ -13,7 +13,7 @@ import requests
 from .paubox import Response
 from .helpers.errors import handle_error
 
-FORMS_BASE_URL = "https://apx.paubox.com/forms"
+FORMS_BASE_URL = "https://api.paubox.com/forms"
 
 
 class PauboxFormsClient(object):
@@ -25,7 +25,7 @@ class PauboxFormsClient(object):
 
     def __init__(self, base_url=FORMS_BASE_URL, api_key=None):
         """
-        :param base_url: Forms API base URL. Defaults to https://apx.paubox.com/forms.
+        :param base_url: Forms API base URL. Defaults to https://api.paubox.com/forms.
         :type base_url: str
         :param api_key: Optional Paubox scoped API key (or JWT) with the 'forms'
             scope. Required for the authenticated form management and
