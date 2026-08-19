@@ -3,8 +3,8 @@
 
 A passing run is not evidence of coverage: a collection error, an over-broad
 --ignore, or a bad fixture can leave the suite reporting success having executed
-almost nothing. The paubox-php suite sat in exactly that state -- 8 tests, 8
-errors, 0 assertions -- without anyone noticing.
+almost nothing. The failure mode is invisible precisely because the exit code
+is 0.
 """
 import sys
 import xml.etree.ElementTree as ET
