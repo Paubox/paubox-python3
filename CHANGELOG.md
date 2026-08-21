@@ -2,13 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## [1.1.0](https://github.com/Paubox/paubox-python3/compare/v1.0.1...v1.1.0) (2026-08-21)
 
-None of the work below has been published to PyPI. It previously sat under
-`1.1.0`, `1.2.0`, and `1.3.0` headings, but those were `setup.py` bumps that
-were never uploaded and never tagged — the newest release on PyPI is still
-`1.0.1` from 2021-06-09. The three sections are merged here because they will
-ship together as a single release.
+First release since `1.0.1` in June 2021. It carries everything that accumulated
+in the repo under the `1.1.0`, `1.2.0`, and `1.3.0` version bumps, none of which
+were ever uploaded to PyPI or tagged.
 
 ### 🚀 New Features
 
@@ -39,26 +37,10 @@ ship together as a single release.
   - `get_form` and `submit_form` percent-encode the id rather than rejecting it, so any id they accepted before still works. The bare dot-segments `.` and `..` are rejected, because encoding cannot neutralize them — `quote()` leaves `.` alone and `requests` un-escapes `%2E` during preparation.
 - No published release was affected: the newest version on PyPI predates `PauboxFormsClient` entirely.
 
-## [1.1.0](https://github.com/Paubox/paubox-python3/compare/v1.0.1...v1.1.0) (2026-08-21)
+### 📚 Documentation
 
-
-### Features
-
-* add authenticated Forms API support via scoped API keys ([111750a](https://github.com/Paubox/paubox-python3/commit/111750a07904c06de86bc95832aa34a9f7c51e31))
-* add authenticated Forms API support via scoped API keys ([87af1bf](https://github.com/Paubox/paubox-python3/commit/87af1bfb1dd60077105c3401496888cf947ff06b))
-
-
-### Bug Fixes
-
-* validate path segments in PauboxFormsClient URLs ([c392a69](https://github.com/Paubox/paubox-python3/commit/c392a69381e1bd44ecb1cb5889aa9b04e47f38d2))
-* validate path segments in PauboxFormsClient URLs ([1877d75](https://github.com/Paubox/paubox-python3/commit/1877d7591fa209ea1c9523a0b8f9fc5c693ee118))
-
-
-### Documentation
-
-* link Paubox Community discussions ([ec70f90](https://github.com/Paubox/paubox-python3/commit/ec70f90fe5d3d3b3cd7d48148421b1c0a52415e6))
-* update paubox.com/paubox.net links to current URLs ([13e6a03](https://github.com/Paubox/paubox-python3/commit/13e6a0352294f73fc4d30213cf65efde052aaa57))
-* update paubox.com/paubox.net links to current URLs ([cec9e40](https://github.com/Paubox/paubox-python3/commit/cec9e400bdc7291529840a277473f5705d8db6d3))
+- Link Paubox Community discussions
+- Update `paubox.com` / `paubox.net` links to current URLs
 
 ## v1.0.1 / 2021-06-09
 
