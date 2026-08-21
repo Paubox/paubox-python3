@@ -2,13 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## [1.1.0](https://github.com/Paubox/paubox-python3/compare/v1.0.1...v1.1.0) (2026-08-21)
 
-None of the work below has been published to PyPI. It previously sat under
-`1.1.0`, `1.2.0`, and `1.3.0` headings, but those were `setup.py` bumps that
-were never uploaded and never tagged — the newest release on PyPI is still
-`1.0.1` from 2021-06-09. The three sections are merged here because they will
-ship together as a single release.
+First release since `1.0.1` in June 2021. It carries everything that accumulated
+in the repo under the `1.1.0`, `1.2.0`, and `1.3.0` version bumps, none of which
+were ever uploaded to PyPI or tagged.
 
 ### 🚀 New Features
 
@@ -38,6 +36,11 @@ ship together as a single release.
   - Authenticated endpoints raise `ValueError` unless the id is a UUID.
   - `get_form` and `submit_form` percent-encode the id rather than rejecting it, so any id they accepted before still works. The bare dot-segments `.` and `..` are rejected, because encoding cannot neutralize them — `quote()` leaves `.` alone and `requests` un-escapes `%2E` during preparation.
 - No published release was affected: the newest version on PyPI predates `PauboxFormsClient` entirely.
+
+### 📚 Documentation
+
+- Link Paubox Community discussions
+- Update `paubox.com` / `paubox.net` links to current URLs
 
 ## v1.0.1 / 2021-06-09
 
