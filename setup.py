@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="paubox-python3",
-    version="1.0.1",
+    version="1.1.0",
     author="Paubox",
     author_email="info@paubox.com",
     description="Python3 SDK for Paubox Email and Forms REST APIs",
