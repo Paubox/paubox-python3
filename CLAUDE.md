@@ -49,7 +49,7 @@ PAUBOX_API_KEY: 'YOUR_API_KEY'
 APPROVED_SENDER: 'sender@yourdomain.com'
 ```
 
-`PAUBOX_HOST` may optionally be added to override the default base URL (`https://api.paubox.com/v1`).
+`PAUBOX_HOST` may optionally be added to override the default base URL (`https://api.paubox.com/v1/email`).
 
 ```bash
 PYTHONPATH=. python tests/test_paubox.py
@@ -59,7 +59,7 @@ PYTHONPATH=. python tests/test_paubox.py
 
 - **`Response` class lives in `paubox/paubox.py`** and is imported by `forms.py` to avoid a breaking change. If you move it, update all importers.
 - **`PauboxFormsClient` accepts an optional `base_url`** constructor argument for test injection (no real HTTP calls in unit tests), and an optional `api_key` argument for the authenticated endpoints.
-- **Forms endpoints use `https://api.paubox.com/forms`**; Email endpoints default to `https://api.paubox.com/v1` (`PAUBOX_API_BASE_URL` in `paubox/paubox.py`), with the `host` constructor argument and the `PAUBOX_HOST` env var kept as optional overrides. No username/endpoint name is needed — an API key alone authenticates.
+- **Forms endpoints use `https://api.paubox.com/v1/forms`**; Email endpoints default to `https://api.paubox.com/v1/email` (`PAUBOX_API_BASE_URL` in `paubox/paubox.py`), with the `host` constructor argument and the `PAUBOX_HOST` env var kept as optional overrides. No username/endpoint name is needed — an API key alone authenticates.
 - **Public Forms endpoints (`get_form`, `submit_form`) send no auth headers** — they are called by form respondents. The management and submission-export endpoints send `Authorization: Bearer <scoped api key>` (a Paubox scoped API key with the `forms` scope; JWTs also accepted).
 - **`submit_form` validates `form_data` locally** before making the network call, raising `ValueError` if it is falsy (mirrors the API's 400 response).
 
@@ -68,9 +68,9 @@ PYTHONPATH=. python tests/test_paubox.py
 | Variable | Used by | Description |
 |---|---|---|
 | `PAUBOX_API_KEY` | `PauboxApiClient` | Paubox Email API key |
-| `PAUBOX_HOST` | `PauboxApiClient` | Optional override of the Email API base URL (default `https://api.paubox.com/v1`) |
+| `PAUBOX_HOST` | `PauboxApiClient` | Optional override of the Email API base URL (default `https://api.paubox.com/v1/email`) |
 
-`PauboxFormsClient` has no required environment variables; its base URL defaults to `https://api.paubox.com/forms`.
+`PauboxFormsClient` has no required environment variables; its base URL defaults to `https://api.paubox.com/v1/forms`.
 
 ## Adding a New API Surface
 

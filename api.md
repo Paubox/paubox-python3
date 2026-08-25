@@ -6,8 +6,8 @@ The SDK exposes two independent clients and a shared `Response` class:
 
 | Class | Module | Auth required | Base URL |
 |---|---|---|---|
-| `PauboxApiClient` | `paubox.paubox` | Yes — `Token token=<key>` | Default `https://api.paubox.com/v1` (`PAUBOX_HOST` / `host` argument as optional override) |
-| `PauboxFormsClient` | `paubox.forms` | Public endpoints: no. Management/export endpoints: yes — `Bearer <scoped api key>` | `https://api.paubox.com/forms` |
+| `PauboxApiClient` | `paubox.paubox` | Yes — `Token token=<key>` | Default `https://api.paubox.com/v1/email` (`PAUBOX_HOST` / `host` argument as optional override) |
+| `PauboxFormsClient` | `paubox.forms` | Public endpoints: no. Management/export endpoints: yes — `Bearer <scoped api key>` | `https://api.paubox.com/v1/forms` |
 | `Response` | `paubox.paubox` | — | — |
 
 All three are importable directly from the top-level package:
@@ -48,7 +48,7 @@ PauboxApiClient(api_key=None, host=None)
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `api_key` | `str` | `os.environ.get('PAUBOX_API_KEY')` | Paubox Email API key. No username/endpoint name is needed — the key alone authenticates. |
-| `host` | `str` | `os.environ.get('PAUBOX_HOST')`, falling back to `https://api.paubox.com/v1` (`PAUBOX_API_BASE_URL`) | Optional override of the Email API base URL |
+| `host` | `str` | `os.environ.get('PAUBOX_HOST')`, falling back to `https://api.paubox.com/v1/email` (`PAUBOX_API_BASE_URL`) | Optional override of the Email API base URL |
 
 ### `send(mail)`
 
@@ -112,12 +112,12 @@ The Forms API has two kinds of endpoints:
 ### Constructor
 
 ```python
-PauboxFormsClient(base_url="https://api.paubox.com/forms", api_key=None)
+PauboxFormsClient(base_url="https://api.paubox.com/v1/forms", api_key=None)
 ```
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `base_url` | `str` | `"https://api.paubox.com/forms"` | Forms API base URL. Override for testing. |
+| `base_url` | `str` | `"https://api.paubox.com/v1/forms"` | Forms API base URL. Override for testing. |
 | `api_key` | `str` or `None` | `None` | Paubox scoped API key with the `forms` scope (or a JWT). Required only for authenticated endpoints. |
 
 ### `get_form(form_id)`
