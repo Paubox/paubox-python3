@@ -9,7 +9,7 @@ import os
 import requests
 from .helpers.errors import handle_error
 
-PAUBOX_API_BASE_URL = "https://api.paubox.com/v1"
+PAUBOX_API_BASE_URL = "https://api.paubox.com/v1/email"
 
 class Response(object):
     """Response from Paubox Transactional Email API"""

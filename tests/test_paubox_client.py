@@ -17,7 +17,7 @@ from paubox.paubox import PauboxApiClient
 TestCase.maxDiff = None
 
 API_KEY = "0123456789abcdef0123456789abcdef"
-DEFAULT_HOST = "https://api.paubox.com/v1"
+DEFAULT_HOST = "https://api.paubox.com/v1/email"
 CUSTOM_HOST = "https://custom.example.com/v1"
 AUTH_HEADERS = {
     "Content-Type": "application/json",

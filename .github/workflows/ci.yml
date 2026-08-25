@@ -52,3 +52,21 @@ jobs:
 
       - name: Assert the suite actually executed
         run: python .github/scripts/assert_tests_ran.py junit-${{ matrix.python-version }}.xml
+
+  route-check:
+    name: Base URLs are routed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install .
+
+      # Read the real constants, so a base URL change cannot pass unprobed.
+      - name: Probe the base URLs the clients use
+        run: |
+          python -c 'from paubox.paubox import PAUBOX_API_BASE_URL as e; from paubox.forms import FORMS_BASE_URL as f; print(e); print(f)' \
+            | .github/scripts/route-check.sh
