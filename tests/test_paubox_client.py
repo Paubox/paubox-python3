@@ -183,5 +183,93 @@ class TestGet(TestCase):
             client.get(TRACKING_ID)
 
 
+class TestSchedule(TestCase):
+    """Tests for PauboxApiClient.schedule."""
+
+    MAIL = {
+        "data": {
+            "message": {
+                "recipients": ["recipient@example.com"],
+                "headers": {"subject": "Scheduled!", "from": "sender@example.com"},
+                "content": {"text/plain": "Hello"},
+            }
+        }
+    }
+
+    @patch("paubox.paubox.requests.post")
+    def test_schedule_posts_to_schedule_endpoint(self, mock_post):
+        mock_post.return_value = _mock_response(status_code=200, text='{"sourceTrackingId": "%s"}' % TRACKING_ID)
+        client = PauboxApiClient(API_KEY, CUSTOM_HOST)
+        client.schedule(self.MAIL, "2025-12-25T15:00:00Z")
+        args, kwargs = mock_post.call_args
+        self.assertEqual(args[0], f"{CUSTOM_HOST}/schedule")
+        self.assertEqual(kwargs["json"]["data"]["scheduled_at"], "2025-12-25T15:00:00Z")
+
+    @patch("paubox.paubox.requests.post")
+    def test_schedule_http_error_raises(self, mock_post):
+        mock_post.return_value = _mock_response(status_code=400, raise_for_status=_http_error(400))
+        client = PauboxApiClient(API_KEY, CUSTOM_HOST)
+        with self.assertRaises(requests.exceptions.HTTPError):
+            client.schedule(self.MAIL, "2025-12-25T15:00:00Z")
+
+
+class TestGetScheduled(TestCase):
+    """Tests for PauboxApiClient.get_scheduled."""
+
+    @patch("paubox.paubox.requests.get")
+    def test_get_scheduled_calls_correct_url(self, mock_get):
+        mock_get.return_value = _mock_response(status_code=200, text='{"state": "pending"}')
+        client = PauboxApiClient(API_KEY, CUSTOM_HOST)
+        client.get_scheduled(TRACKING_ID)
+        args, _ = mock_get.call_args
+        self.assertEqual(args[0], f"{CUSTOM_HOST}/schedule/{TRACKING_ID}")
+
+    @patch("paubox.paubox.requests.get")
+    def test_get_scheduled_http_error_raises(self, mock_get):
+        mock_get.return_value = _mock_response(status_code=404, raise_for_status=_http_error(404))
+        client = PauboxApiClient(API_KEY, CUSTOM_HOST)
+        with self.assertRaises(requests.exceptions.HTTPError):
+            client.get_scheduled(TRACKING_ID)
+
+
+class TestReschedule(TestCase):
+    """Tests for PauboxApiClient.reschedule."""
+
+    @patch("paubox.paubox.requests.patch")
+    def test_reschedule_patches_correct_url(self, mock_patch):
+        mock_patch.return_value = _mock_response(status_code=200, text='{"data": "Rescheduled"}')
+        client = PauboxApiClient(API_KEY, CUSTOM_HOST)
+        client.reschedule(TRACKING_ID, "2025-12-26T10:00:00Z")
+        args, kwargs = mock_patch.call_args
+        self.assertEqual(args[0], f"{CUSTOM_HOST}/schedule/{TRACKING_ID}")
+        self.assertEqual(kwargs["json"]["scheduled_at"], "2025-12-26T10:00:00Z")
+
+    @patch("paubox.paubox.requests.patch")
+    def test_reschedule_http_error_raises(self, mock_patch):
+        mock_patch.return_value = _mock_response(status_code=400, raise_for_status=_http_error(400))
+        client = PauboxApiClient(API_KEY, CUSTOM_HOST)
+        with self.assertRaises(requests.exceptions.HTTPError):
+            client.reschedule(TRACKING_ID, "2025-12-26T10:00:00Z")
+
+
+class TestCancelScheduled(TestCase):
+    """Tests for PauboxApiClient.cancel_scheduled."""
+
+    @patch("paubox.paubox.requests.post")
+    def test_cancel_scheduled_posts_to_cancel(self, mock_post):
+        mock_post.return_value = _mock_response(status_code=200, text='{"state": "cancelled"}')
+        client = PauboxApiClient(API_KEY, CUSTOM_HOST)
+        client.cancel_scheduled(TRACKING_ID)
+        args, _ = mock_post.call_args
+        self.assertEqual(args[0], f"{CUSTOM_HOST}/schedule/{TRACKING_ID}/cancel")
+
+    @patch("paubox.paubox.requests.post")
+    def test_cancel_scheduled_http_error_raises(self, mock_post):
+        mock_post.return_value = _mock_response(status_code=400, raise_for_status=_http_error(400))
+        client = PauboxApiClient(API_KEY, CUSTOM_HOST)
+        with self.assertRaises(requests.exceptions.HTTPError):
+            client.cancel_scheduled(TRACKING_ID)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
