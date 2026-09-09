@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0](https://github.com/Paubox/paubox-python3/compare/v1.1.0...v1.2.0) (2026-09-09)
+
+
+### Features
+
+* add scheduled send support ([#21](https://github.com/Paubox/paubox-python3/issues/21)) ([09438b3](https://github.com/Paubox/paubox-python3/commit/09438b33ce21fd9fe4fc67b1d64f9800f930770d))
+
+
+### Bug Fixes
+
+* target the documented /v1/email and /v1/forms base URLs ([#19](https://github.com/Paubox/paubox-python3/issues/19)) ([484728e](https://github.com/Paubox/paubox-python3/commit/484728ec464f372c74304558f159d401d46fef6d))
+
 ## [1.1.0](https://github.com/Paubox/paubox-python3/compare/v1.0.1...v1.1.0) (2026-08-21)
 
 First release since `1.0.1` in June 2021. It carries everything that accumulated
