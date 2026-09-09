@@ -111,3 +111,79 @@ class PauboxApiClient(object):
         except requests.exceptions.HTTPError as error:
             raise handle_error(error)
         return Response(response)
+
+    def schedule(self, mail, scheduled_at):
+        """
+        Schedule a message for future delivery through the Paubox API.
+
+        :param mail: Message payload (same format as send()).
+        :param scheduled_at: ISO 8601 UTC datetime string (e.g. "2024-12-25T15:00:00Z").
+        """
+        key = "" if self.api_key is None else self.api_key
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': "Token token=" + key
+        }
+        body = {"data": {"message": mail.get("data", {}).get("message", mail), "scheduled_at": scheduled_at}}
+        url = self.host + '/schedule'
+        try:
+            response = requests.post(url, json=body, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def get_scheduled(self, source_tracking_id):
+        """
+        Get the status of a scheduled message.
+        """
+        key = "" if self.api_key is None else self.api_key
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': "Token token=" + key
+        }
+        url = self.host + '/schedule/' + source_tracking_id
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def reschedule(self, source_tracking_id, scheduled_at):
+        """
+        Reschedule a pending scheduled message.
+
+        :param source_tracking_id: The sourceTrackingId of the scheduled message.
+        :param scheduled_at: New ISO 8601 UTC datetime string.
+        """
+        key = "" if self.api_key is None else self.api_key
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': "Token token=" + key
+        }
+        body = {"scheduled_at": scheduled_at}
+        url = self.host + '/schedule/' + source_tracking_id
+        try:
+            response = requests.patch(url, json=body, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def cancel_scheduled(self, source_tracking_id):
+        """
+        Cancel a pending scheduled message.
+        """
+        key = "" if self.api_key is None else self.api_key
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': "Token token=" + key
+        }
+        url = self.host + '/schedule/' + source_tracking_id + '/cancel'
+        try:
+            response = requests.post(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
