@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0](https://github.com/Paubox/paubox-python3/compare/v1.2.0...v1.3.0) (2026-09-16)
+
+
+### Features
+
+* add receiving (inbound email) endpoints ([#24](https://github.com/Paubox/paubox-python3/issues/24)) ([11442b0](https://github.com/Paubox/paubox-python3/commit/11442b063754eef47842419fa1574a53b43e3569))
+
 ## [1.2.0](https://github.com/Paubox/paubox-python3/compare/v1.1.0...v1.2.0) (2026-09-09)
 
 
