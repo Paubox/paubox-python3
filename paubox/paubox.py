@@ -187,3 +187,122 @@ class PauboxApiClient(object):
         except requests.exceptions.HTTPError as error:
             raise handle_error(error)
         return Response(response)
+
+    def _auth_headers(self):
+        key = "" if self.api_key is None else self.api_key
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': "Token token=" + key
+        }
+
+    def list_receiving_domains(self):
+        url = self.host + '/receiving/domains'
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def create_receiving_domain(self, slug=None):
+        url = self.host + '/receiving/domains'
+        body = {}
+        if slug is not None:
+            body['slug'] = slug
+        try:
+            response = requests.post(url, json=body, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def get_receiving_domain(self, domain_id):
+        url = self.host + '/receiving/domains/' + str(domain_id)
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def delete_receiving_domain(self, domain_id):
+        url = self.host + '/receiving/domains/' + str(domain_id)
+        try:
+            response = requests.delete(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def list_receiving_mailboxes(self, domain_id):
+        url = self.host + '/receiving/domains/' + str(domain_id) + '/mailboxes'
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def create_receiving_mailbox(self, domain_id, name, password, quota_bytes=None):
+        url = self.host + '/receiving/domains/' + str(domain_id) + '/mailboxes'
+        body = {'name': name, 'password': password}
+        if quota_bytes is not None:
+            body['quota_bytes'] = quota_bytes
+        try:
+            response = requests.post(url, json=body, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def get_receiving_mailbox(self, domain_id, mailbox_id):
+        url = self.host + '/receiving/domains/' + str(domain_id) + '/mailboxes/' + str(mailbox_id)
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def delete_receiving_mailbox(self, domain_id, mailbox_id):
+        url = self.host + '/receiving/domains/' + str(domain_id) + '/mailboxes/' + str(mailbox_id)
+        try:
+            response = requests.delete(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def list_received_emails(self, limit=None, after=None, before=None):
+        url = self.host + '/receiving'
+        params = {}
+        if limit is not None:
+            params['limit'] = limit
+        if after is not None:
+            params['after'] = after
+        if before is not None:
+            params['before'] = before
+        try:
+            response = requests.get(url, params=params, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def get_received_email(self, email_id):
+        url = self.host + '/receiving/' + str(email_id)
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def get_received_email_attachment(self, email_id, blob_id):
+        url = self.host + '/receiving/' + str(email_id) + '/attachments/' + str(blob_id)
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
