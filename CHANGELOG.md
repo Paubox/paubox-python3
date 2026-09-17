@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0](https://github.com/Paubox/paubox-python3/compare/v1.3.0...v1.4.0) (2026-09-17)
+
+
+### Features
+
+* webhook endpoint CRUD support ([#26](https://github.com/Paubox/paubox-python3/issues/26)) ([4e56cd5](https://github.com/Paubox/paubox-python3/commit/4e56cd521a552e42e40b8746aa7b7d0dc8d21515))
+
 ## [1.3.0](https://github.com/Paubox/paubox-python3/compare/v1.2.0...v1.3.0) (2026-09-16)
 
 
