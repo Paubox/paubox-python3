@@ -306,3 +306,62 @@ class PauboxApiClient(object):
         except requests.exceptions.HTTPError as error:
             raise handle_error(error)
         return Response(response)
+
+    def list_webhook_endpoints(self):
+        url = self.host + '/webhook_endpoints'
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def create_webhook_endpoint(self, target_url, events, signing_key=None, api_key=None, active=True):
+        url = self.host + '/webhook_endpoints'
+        body = {'target_url': target_url, 'events': events, 'active': active}
+        if signing_key is not None:
+            body['signing_key'] = signing_key
+        if api_key is not None:
+            body['api_key'] = api_key
+        try:
+            response = requests.post(url, json=body, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def get_webhook_endpoint(self, endpoint_id):
+        url = self.host + '/webhook_endpoints/' + str(endpoint_id)
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def update_webhook_endpoint(self, endpoint_id, target_url=None, events=None, active=None, api_key=None):
+        url = self.host + '/webhook_endpoints/' + str(endpoint_id)
+        body = {}
+        if target_url is not None:
+            body['target_url'] = target_url
+        if events is not None:
+            body['events'] = events
+        if active is not None:
+            body['active'] = active
+        if api_key is not None:
+            body['api_key'] = api_key
+        try:
+            response = requests.patch(url, json=body, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def delete_webhook_endpoint(self, endpoint_id):
+        url = self.host + '/webhook_endpoints/' + str(endpoint_id)
+        try:
+            response = requests.delete(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
