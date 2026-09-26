@@ -147,7 +147,7 @@ class TestSubmitForm(TestCase):
         client = PauboxFormsClient(base_url="https://api.paubox.com/v1/forms")
         client.submit_form(FORM_ID, form_data={"x": "y"})
         mock_post.assert_called_once()
-        args, kwargs = mock_post.call_args
+        args, _ = mock_post.call_args
         self.assertEqual(args[0], f"https://api.paubox.com/v1/forms/api/forms/{FORM_ID}/submissions")
 
     @patch("paubox.forms.requests.post")
@@ -900,6 +900,20 @@ class TestPathSegmentSanitization(TestCase):
                         client.get_form_by_id(bad)
                     with self.assertRaises(ValueError):
                         client.export_submission_pdf(FORM_ID, bad)
+                    mock_get.assert_not_called()
+
+    def test_non_string_ids_still_raise_valueerror(self):
+        """
+        Pins the str() coercion in _path_segment, which is why the uuid.UUID
+        call can only raise ValueError. Drop the coercion and an int id raises
+        AttributeError instead, undocumented and uncaught by callers.
+        """
+        client = PauboxFormsClient(api_key=API_KEY)
+        for bad in [123, b"x", 4.5, object()]:
+            with self.subTest(value=bad):
+                with patch("paubox.forms.requests.get") as mock_get:
+                    with self.assertRaises(ValueError):
+                        client.get_form_by_id(bad)
                     mock_get.assert_not_called()
 
     def test_valid_uuids_still_build_the_documented_urls(self):
