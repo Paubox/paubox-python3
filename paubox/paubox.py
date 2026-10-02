@@ -6,6 +6,7 @@ Paubox Client
 
 import json
 import os
+import warnings
 import requests
 from .helpers.errors import handle_error
 
@@ -15,9 +16,10 @@ class Response(object):
     """Response from Paubox Transactional Email API"""
 
     def __init__(self, response):
+        self._response = response
         self._status_code = response.status_code
         self._headers = response.headers
-        self._text = response.text
+        self._text = None
         self._content = response.content
 
     @property
@@ -39,6 +41,8 @@ class Response(object):
         """
         :return: Body of Paubox API response
         """
+        if self._text is None:
+            self._text = self._response.text
         return self._text
 
     @property
@@ -273,7 +277,7 @@ class PauboxApiClient(object):
             raise handle_error(error)
         return Response(response)
 
-    def list_received_emails(self, limit=None, after=None, before=None):
+    def list_received_emails(self, limit=None, after=None, before=None, search=None, sort=None, ascending=None):
         url = self.host + '/receiving'
         params = {}
         if limit is not None:
@@ -282,6 +286,14 @@ class PauboxApiClient(object):
             params['after'] = after
         if before is not None:
             params['before'] = before
+        if search is not None:
+            params['search'] = search
+        if sort is not None:
+            params['sort'] = sort
+        if ascending is not None:
+            if isinstance(ascending, bool):
+                ascending = 'true' if ascending else 'false'
+            params['ascending'] = ascending
         try:
             response = requests.get(url, params=params, headers=self._auth_headers())
             response.raise_for_status()
@@ -298,8 +310,42 @@ class PauboxApiClient(object):
             raise handle_error(error)
         return Response(response)
 
-    def get_received_email_attachment(self, email_id, blob_id):
-        url = self.host + '/receiving/' + str(email_id) + '/attachments/' + str(blob_id)
+    def get_received_email_raw(self, email_id):
+        url = self.host + '/receiving/' + str(email_id) + '/raw'
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def list_received_email_attachments(self, email_id):
+        url = self.host + '/receiving/' + str(email_id) + '/attachments'
+        try:
+            response = requests.get(url, headers=self._auth_headers())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise handle_error(error)
+        return Response(response)
+
+    def get_received_email_attachment(self, email_id, attachment_id=None, blob_id=None):
+        """
+        Returns the raw file, not JSON: bytes in ``response.content``, type and
+        filename in the ``Content-Type`` / ``Content-Disposition`` headers.
+        ``blob_id`` is a deprecated alias for ``attachment_id``.
+        """
+        if blob_id is not None:
+            warnings.warn(
+                "blob_id is deprecated; use attachment_id",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            if attachment_id is not None:
+                raise TypeError("pass attachment_id or blob_id, not both")
+            attachment_id = blob_id
+        if attachment_id is None:
+            raise TypeError("get_received_email_attachment() missing required argument: 'attachment_id'")
+        url = self.host + '/receiving/' + str(email_id) + '/attachments/' + str(attachment_id)
         try:
             response = requests.get(url, headers=self._auth_headers())
             response.raise_for_status()
