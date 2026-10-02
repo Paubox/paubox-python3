@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1](https://github.com/Paubox/paubox-python3/compare/v1.4.0...v1.4.1) (2026-10-02)
+
+
+### Bug Fixes
+
+* **receiving:** key attachments by attachment_id and match the receiving API ([#28](https://github.com/Paubox/paubox-python3/issues/28)) ([5489939](https://github.com/Paubox/paubox-python3/commit/54899398c8257b836ea4dfea36853473878a7297))
+
 ## [1.4.0](https://github.com/Paubox/paubox-python3/compare/v1.3.0...v1.4.0) (2026-09-17)
 
 
