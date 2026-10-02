@@ -74,7 +74,7 @@ class TestWebhookEndpoints(unittest.TestCase):
         mock_post.return_value = mock_response(201, {'message': 'Webhook created!', 'data': WEBHOOK_DATA})
         self.client.create_webhook_endpoint(
             target_url='https://example.com/webhook',
-            events=['api_mail_log_delivered', 'inbound_mail_received'],
+            events=['api_mail_log_delivered', 'api_mail_log_permanent_failure'],
             signing_key='sk_test',
             api_key='ak_test',
             active=False,
