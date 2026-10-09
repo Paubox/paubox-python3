@@ -488,6 +488,99 @@ with open("submission.pdf", "wb") as f:
     f.write(response.content)
 ```
 
+<a name="#webhooks"></a>
+## Webhooks
+
+A webhook endpoint is a URL you own that Paubox notifies when something happens.
+`PauboxWebhooksClient` manages those subscriptions: which URL to notify, and for which
+events.
+
+Every method on this client needs a **scoped API key**, sent as `Authorization: Bearer
+<key>` — unlike `PauboxFormsClient`, there are no public routes here:
+
+```python
+import paubox
+
+webhooks_client = paubox.PauboxWebhooksClient(api_key="your-scoped-api-key")
+```
+
+Which events a key may subscribe to follows from its scopes. The SDK does not inspect
+them — the service refuses an event the key isn't scoped for with 403, and an
+unrecognised event with 422.
+
+### Creating a Webhook Endpoint
+
+```python
+response = webhooks_client.create_webhook_endpoint(
+    target_url="https://example.com/paubox-webhook",
+    events=["forms.submission.created"],
+)
+endpoint = response.to_dict["data"]
+
+print(endpoint["id"])              # UUID
+print(endpoint["signing_secret"])  # whsec_... — store this now
+```
+
+`signing_secret` is returned **once**, here. It is absent from `get_webhook_endpoint`
+and `list_webhook_endpoints`, and there is no way to read it back — recovering from a
+lost secret means deleting the endpoint and creating a new one. Use it to verify that
+deliveries really came from Paubox.
+
+### Listing Webhook Endpoints
+
+```python
+response = webhooks_client.list_webhook_endpoints()
+body = response.to_dict
+
+for endpoint in body["data"]:
+    print(endpoint["id"], endpoint["target_url"], endpoint["status"])
+
+print(body["page_info"]["count"])  # total matching, not the length of this page
+
+# Paginated
+response = webhooks_client.list_webhook_endpoints(page=2, items=25)
+```
+
+### Getting a Webhook Endpoint
+
+```python
+response = webhooks_client.get_webhook_endpoint("2ec66c21-bf48-48eb-8d28-f80b2d6b77c7")
+endpoint = response.to_dict["data"]
+```
+
+### Updating a Webhook Endpoint
+
+A partial update: only the arguments you pass are sent, so changing the status leaves
+the URL and events alone.
+
+```python
+response = webhooks_client.update_webhook_endpoint(endpoint_id, status="disabled")
+```
+
+Pausing deliveries without losing the subscription is what `disabled` is for; pass
+`active` to resume. Passing `events` replaces the list rather than adding to it.
+
+### Deleting a Webhook Endpoint
+
+```python
+response = webhooks_client.delete_webhook_endpoint(endpoint_id)
+print(response.status_code)  # 204
+```
+
+The service answers `204 No Content`, so `to_dict` is `None`. Deleting stops every event
+on that endpoint, and the signing secret goes with it.
+
+### Webhook Error Handling
+
+A non-2xx response raises `requests.HTTPError` carrying the service's own message, so a
+caller sees `target_url: an endpoint already exists for this URL` rather than requests'
+generic `422 Client Error: Unprocessable Entity for url: ...`.
+
+Two cases worth handling explicitly: subscribing a `target_url` that already has an
+endpoint comes back as 422, and an id that doesn't belong to your account is a 404
+rather than a 403. An id that isn't a UUID raises `ValueError` locally, before any
+request is made.
+
 <a name="#contributing"></a>
 ## Contributing
 The Paubox-python3 SDK is maintained by [Paubox, Inc.](https://www.paubox.com)
