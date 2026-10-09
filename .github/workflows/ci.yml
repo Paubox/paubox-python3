@@ -68,5 +68,10 @@ jobs:
       # Read the real constants, so a base URL change cannot pass unprobed.
       - name: Probe the base URLs the clients use
         run: |
-          python -c 'from paubox.paubox import PAUBOX_API_BASE_URL as e; from paubox.forms import FORMS_BASE_URL as f; print(e); print(f)' \
+          # The webhooks base is probed with /endpoints appended. The gateway
+          # scopes its rule to that one resource so the producers' event-ingest
+          # route stays off the public host, which leaves the bare base
+          # unrouted by design — probing it directly would fail this check for
+          # a URL the client never requests on its own.
+          python -c 'from paubox.paubox import PAUBOX_API_BASE_URL as e; from paubox.forms import FORMS_BASE_URL as f; from paubox.webhooks import WEBHOOKS_BASE_URL as w; print(e); print(f); print(w + "/endpoints")' \
             | .github/scripts/route-check.sh

@@ -2,12 +2,13 @@
 
 ## Overview
 
-The SDK exposes two independent clients and a shared `Response` class:
+The SDK exposes three independent clients and a shared `Response` class:
 
 | Class | Module | Auth required | Base URL |
 |---|---|---|---|
 | `PauboxApiClient` | `paubox.paubox` | Yes — `Token token=<key>` | Default `https://api.paubox.com/v1/email` (`PAUBOX_HOST` / `host` argument as optional override) |
 | `PauboxFormsClient` | `paubox.forms` | Public endpoints: no. Management/export endpoints: yes — `Bearer <scoped api key>` | `https://api.paubox.com/v1/forms` |
+| `PauboxWebhooksClient` | `paubox.webhooks` | Yes — `Bearer <scoped api key>` | `https://api.paubox.com/v1/webhooks` |
 | `Response` | `paubox.paubox` | — | — |
 
 All three are importable directly from the top-level package:
@@ -567,6 +568,72 @@ response = client.export_submission_pdf(
 with open("submission.pdf", "wb") as f:
     f.write(response.content)
 ```
+
+---
+
+## Webhooks API — `PauboxWebhooksClient`
+
+Manages webhook subscriptions: which URL Paubox notifies, for which events.
+
+Every endpoint requires a **Paubox scoped API key**, sent as `Authorization: Bearer <api_key>` — the same scheme as Forms, and a different one from the Email API's `Token token=`. Unlike `PauboxFormsClient` there are no public routes, so calling any method without an `api_key` raises `ValueError` before a network call.
+
+Which events a key may subscribe to is decided by its scopes. Subscribing to an event the key is not scoped for returns `403`; an unrecognised event returns `422`.
+
+> **Breaking change.** These five methods previously lived on `PauboxApiClient` and targeted the legacy Email API at `/v1/email/webhook_endpoints` with **integer** ids and `Token token=` auth. They now live on `PauboxWebhooksClient`, target the webhooks service, and take **UUID** ids. The method names are unchanged.
+
+### Constructor
+
+```python
+PauboxWebhooksClient(base_url="https://api.paubox.com/v1/webhooks", api_key=None)
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `base_url` | `str` | `"https://api.paubox.com/v1/webhooks"` | Webhooks API base URL. Override for testing. |
+| `api_key` | `str` or `None` | `None` | Paubox scoped API key. Required for every endpoint. |
+
+### `list_webhook_endpoints(page=None, items=None)`
+
+List the endpoints this key can act on. Endpoints carrying an event the key is not scoped for are filtered out by the service.
+
+Returns a `Response` whose `to_dict` is `{"data": [...], "page_info": {...}}`.
+
+**`page_info["count"]` is the total number of matching endpoints, not the length of the returned page.**
+
+### `create_webhook_endpoint(target_url, events)`
+
+Subscribe a URL to one or more events. `target_url` must be an `https` URL resolving to a publicly routable address.
+
+```python
+body = client.create_webhook_endpoint(
+    "https://hooks.example.com/paubox", ["forms.submission.created"]
+).to_dict
+body["data"]["signing_secret"]  # persist this now
+```
+
+`signing_secret` is returned **only here** — it is absent from `get_webhook_endpoint` and `list_webhook_endpoints`. A lost secret means replacing the endpoint.
+
+Event names are **not** validated client-side: the catalog belongs to the service and grows without an SDK release.
+
+### `get_webhook_endpoint(endpoint_id)`
+
+Returns a `Response` whose `to_dict` is `{"data": {...}}`, without the signing secret.
+
+A malformed UUID and another tenant's id both return `404` with the same message — the service gives no existence oracle. A non-UUID `endpoint_id` raises `ValueError` before any request.
+
+### `update_webhook_endpoint(endpoint_id, target_url=None, status=None, events=None)`
+
+Partial update — only the arguments given are sent, so changing `target_url` leaves `events` and `status` untouched. `status` accepts `"active"` or `"disabled"`. Passing nothing to change raises `ValueError`.
+
+### `delete_webhook_endpoint(endpoint_id)`
+
+Deletes the endpoint, stopping every event on it. The service answers `204` with no body, so `to_dict` is `None`.
+
+### Webhook errors
+
+Failures raise `requests.exceptions.HTTPError` with the **service's own message** promoted onto it, so a caller sees `target_url: must be an https URL` rather than `422 Client Error: Unprocessable Entity for url: ...`. The original response stays on `error.response`.
+
+Note a duplicate `target_url` is **`422`, not `409`**.
 
 ---
 
