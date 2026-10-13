@@ -198,10 +198,9 @@ class PauboxFormsClient(object):
 
         GET /api/forms
 
-        :param customer_id: Customer whose forms to list. Effectively required
-            for API-key callers: the server returns 403 Forbidden when it is
-            omitted, so pass the customer ID your key is scoped to (or a
-            related customer's).
+        :param customer_id: Customer whose forms to list. Defaults server-side
+            to the API key's customer; pass it only to list a related
+            customer's forms (403 Forbidden if the key cannot access it).
         :type customer_id: int or None
         :param form_id: Filter to a single form UUID.
         :type form_id: str or None

@@ -421,9 +421,8 @@ import paubox
 
 forms_client = paubox.PauboxFormsClient(api_key="YOUR_SCOPED_API_KEY")
 
-# List forms (paginated; pass the customer_id your key is scoped to —
-# API-key calls that omit it are rejected with 403 Forbidden)
-response = forms_client.list_forms(customer_id=12345, search="intake", order="asc", order_by="title", page=1, items=25)
+# List your forms (paginated; customer_id defaults to the key's customer)
+response = forms_client.list_forms(search="intake", order="asc", order_by="title", page=1, items=25)
 print(response.to_dict["results"])      # list of forms
 print(response.to_dict["page_info"])    # {"count", "pages", "page", "items"}
 
