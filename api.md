@@ -235,7 +235,7 @@ Authorization: Bearer {api_key}
 
 | Parameter | Type | Description |
 |---|---|---|
-| `customer_id` | `int` or `None` | Customer whose forms to list. Effectively required for API-key callers — the server returns 403 Forbidden when omitted. Pass the customer ID your key is scoped to (or a related customer's) |
+| `customer_id` | `int` or `None` | Customer whose forms to list. Defaults server-side to the key's customer; pass it only to list a related customer's forms (403 Forbidden if the key cannot access that customer) |
 | `form_id` | `str` or `None` | Filter to a single form UUID |
 | `search` | `str` or `None` | Matches against form title and description |
 | `order` | `str` or `None` | `"asc"` or `"desc"` (default `"desc"`) |
@@ -262,7 +262,7 @@ Authorization: Bearer {api_key}
 import paubox
 
 client = paubox.PauboxFormsClient(api_key="YOUR_SCOPED_API_KEY")
-response = client.list_forms(customer_id=12345, search="intake", order="asc", order_by="title", items=25)
+response = client.list_forms(search="intake", order="asc", order_by="title", items=25)
 for form in response.to_dict["results"]:
     print(form["title"])
 ```
