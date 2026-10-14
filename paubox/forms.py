@@ -119,7 +119,7 @@ class PauboxFormsClient(object):
         if require_uuid:
             try:
                 uuid.UUID(value)
-            except (AttributeError, TypeError, ValueError):
+            except ValueError:
                 raise ValueError(
                     f"{name} must be a UUID, got {value!r}."
                 )
