@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0](https://github.com/Paubox/paubox-python3/compare/v1.4.1...v2.0.0) (2026-10-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* move webhook CRUD to the pb_webhooks service ([#31](https://github.com/Paubox/paubox-python3/issues/31))
+
+### Features
+
+* move webhook CRUD to the pb_webhooks service ([#31](https://github.com/Paubox/paubox-python3/issues/31)) ([c0613ec](https://github.com/Paubox/paubox-python3/commit/c0613ec483b4a6eaac91d4a34ea9a5b4421caedb))
+
 ## [1.4.1](https://github.com/Paubox/paubox-python3/compare/v1.4.0...v1.4.1) (2026-10-02)
 
 
